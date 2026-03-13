@@ -73,4 +73,187 @@
             <div id="createLoading" class="login-loading" style="display:none;">
                 <div class="spinner-small"></div>
                 <span>아이디 생성 중...</span>
-            
+            </div>
+
+            <!-- 생성 에러 -->
+            <div id="createError" class="login-error" style="display:none;"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════╗
+     ║       테마 토글 + 스크롤              ║
+     ╚═══════════════════════════════════════╝ -->
+<button id="themeToggle" class="theme-toggle" aria-label="테마 변경">🌙</button>
+<button id="scrollTopBtn" class="scroll-top-btn" aria-label="맨 위로">↑</button>
+
+<!-- ╔═══════════════════════════════════════╗
+     ║       메인 앱 (로그인 후 표시)         ║
+     ╚═══════════════════════════════════════╝ -->
+<div id="appScreen" class="container" style="display:none;">
+
+    <header>
+        <h1>🎤 나의 노래 리스트</h1>
+
+        <!-- 사용자 바 -->
+        <div class="user-bar" id="userBar" style="display:none;">
+            <span class="user-badge" id="userBadge">👤 게스트</span>
+            <button id="saveFavBtn" class="save-fav-btn" style="display:none;">💾 저장됨</button>
+            <button id="logoutBtn" class="logout-btn">🚪 로그아웃</button>
+        </div>
+
+        <p class="subtitle">
+            <span id="filteredCount">0</span> / <span id="totalCount">0</span>곡
+        </p>
+
+        <button id="randomBtn" class="random-btn">🎲 랜덤 추천</button>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" inputmode="search"
+                   placeholder="🔍 제목, 가수 검색 (초성 가능: ㅎㅂㄹㄱ)"
+                   autocomplete="off" spellcheck="false">
+            <div class="search-options">
+                <label class="toggle-label">
+                    <input type="checkbox" id="lyricsSearchToggle">
+                    <span>가사 포함 검색</span>
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- 필터 -->
+    <div class="filters">
+        <div class="filter-group">
+            <span class="filter-label">보기</span>
+            <div class="filter-buttons" id="viewFilters">
+                <button class="filter-btn active" data-value="all">전체</button>
+                <button class="filter-btn fav-filter-btn" data-value="favorites">
+                    ⭐ 즐겨찾기 <span id="favCount" class="fav-count">0</span>
+                </button>
+            </div>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">성별</span>
+            <div class="filter-buttons" id="genderFilters">
+                <button class="filter-btn active" data-value="전체">전체</button>
+                <button class="filter-btn" data-value="여">👩 여</button>
+                <button class="filter-btn" data-value="남">👨 남</button>
+            </div>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">장르</span>
+            <div class="filter-buttons" id="genreFilters">
+                <button class="filter-btn active" data-value="전체">전체</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩/에러 -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>노래 목록을 불러오는 중...</p>
+    </div>
+
+    <div id="errorMsg" class="error-msg" style="display:none;">
+        <p>❌ 데이터를 불러올 수 없습니다</p>
+        <p class="error-sub">새로고침하거나 네트워크를 확인해주세요</p>
+        <button id="retryBtn" class="retry-btn">🔄 다시 시도</button>
+    </div>
+
+    <!-- 테이블 -->
+    <div id="songListWrapper" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-num">#</th>
+                    <th class="col-fav">♡</th>
+                    <th class="col-title sortable" data-sort="title">곡명 <span class="sort-arrow">⇅</span></th>
+                    <th class="col-artist sortable" data-sort="artist">가수 <span class="sort-arrow">⇅</span></th>
+                    <th class="col-genre sortable" data-sort="genre">장르 <span class="sort-arrow">⇅</span></th>
+                    <th class="col-gender sortable" data-sort="gender">성별 <span class="sort-arrow">⇅</span></th>
+                </tr>
+            </thead>
+            <tbody id="songTableBody"></tbody>
+        </table>
+        <p id="noResult" class="no-result" style="display:none;">검색 결과가 없습니다 😢</p>
+        <div id="scrollSentinel" class="scroll-sentinel"></div>
+        <div id="loadingMore" class="loading-more" style="display:none;"><div class="spinner-small"></div></div>
+    </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════╗
+     ║       가사 모달                        ║
+     ╚═══════════════════════════════════════╝ -->
+<div id="lyricsModal" class="modal" role="dialog">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <p id="modalArtist"></p>
+            <div class="modal-tags">
+                <span id="modalGenre" class="mtag genre-tag"></span>
+                <span id="modalGender" class="mtag gender-tag"></span>
+            </div>
+        </div>
+        <div class="modal-body">
+            <pre id="modalLyrics"></pre>
+        </div>
+    </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════╗
+     ║       랜덤 모달                        ║
+     ╚═══════════════════════════════════════╝ -->
+<div id="randomModal" class="modal" role="dialog">
+    <div class="modal-overlay random-overlay"></div>
+    <div class="random-content">
+        <button class="modal-close" id="randomClose">&times;</button>
+        <div class="random-icon" id="randomIcon">🎲</div>
+        <div class="random-label">오늘의 추천곡</div>
+        <div class="random-card">
+            <div class="random-title" id="randomTitle"></div>
+            <div class="random-artist" id="randomArtist"></div>
+            <div class="random-meta">
+                <span id="randomGenre" class="mtag genre-tag"></span>
+                <span id="randomGender" class="mtag gender-tag"></span>
+            </div>
+        </div>
+        <div class="random-actions">
+            <button id="randomLyricsBtn" class="ra-btn ra-lyrics">📜 가사</button>
+            <button id="randomFavBtn" class="ra-btn ra-fav">⭐ 즐겨찾기</button>
+            <button id="randomAgainBtn" class="ra-btn ra-again">🎲 다시 뽑기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════╗
+     ║       저장 확인 모달                    ║
+     ╚═══════════════════════════════════════╝ -->
+<div id="saveConfirmModal" class="modal" role="dialog">
+    <div class="modal-overlay save-overlay"></div>
+    <div class="save-confirm-box">
+        <div class="save-icon">💾</div>
+        <h2>즐겨찾기 저장</h2>
+        <p class="save-desc" id="saveConfirmText"></p>
+        <div class="save-actions">
+            <button id="saveConfirmBtn" class="sa-btn sa-confirm">💾 저장하기</button>
+            <button id="saveCancelBtn" class="sa-btn sa-cancel">취소</button>
+        </div>
+        <div id="saveLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>저장 중...</span>
+        </div>
+    </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" class="toast" role="alert"></div>
+
+<footer id="appFooter" style="display:none;">
+    <p>📊 Google Sheets 연동 | ⭐ <span id="footerSaveInfo">클라우드 저장</span></p>
+</footer>
+
+</body>
+</html>
