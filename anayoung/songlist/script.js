@@ -2,13 +2,12 @@
    ║  ⚙️  설정                                                ║
    ╚═══════════════════════════════════════════════════════════╝ */
 const CONFIG = Object.freeze({
-    // 노래 데이터
     SONG_SS_ID : '1sAsXEl14Vr4k1hlAhdHD5JpIjWu4eFQgwo2KP9nP8oU',
     SONG_SHEET : '데이터베이스',
     SONG_RANGE : 'E:I',
 
-    // ⭐ Apps Script 배포 URL (여기에 입력!)
-    API_URL    : 'https://script.google.com/macros/s/AKfycbwSK3iHaV3QbyEFpW347SsOaG6ZrkE3Yx9WLrAM-5pmETbkYDgFMN08HWJpYVstUpnu/exec',
+    // ⭐ Apps Script 배포 URL
+    API_URL    : 'YOUR_APPS_SCRIPT_URL_HERE',
 
     PER_PAGE   : 80,
     CACHE_KEY  : 'songlist_cache',
@@ -24,7 +23,7 @@ const SONG_CSV_URL =
     + `&range=${CONFIG.SONG_RANGE}`;
 
 /* ══════════════════════════════════════
-   전역 상태
+   전역
    ══════════════════════════════════════ */
 let allSongs = [], filteredSongs = [], displayedCount = 0;
 let activeView = 'all', activeGender = '전체', activeGenre = '전체';
@@ -36,7 +35,7 @@ let currentUser = null;
 let favorites = new Set();
 let favDirty = false;
 let serverFavKeys = new Set();
-let pendingCreateId = null;  // 생성 대기 중인 아이디
+let pendingCreateId = null;
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => document.querySelectorAll(sel);
@@ -44,51 +43,48 @@ let DOM = {};
 
 function cacheDom() {
     DOM = {
-        // 로그인
-        loginScreen:   $('#loginScreen'),
-        appScreen:     $('#appScreen'),
-        userIdInput:   $('#userIdInput'),
-        loginBtn:      $('#loginBtn'),
-        guestBtn:      $('#guestBtn'),
-        loginError:    $('#loginError'),
-        loginLoading:  $('#loginLoading'),
-        // 생성 모달
-        createModal:   $('#createModal'),
-        createIdText:  $('#createIdDisplay'),
-        createConfirm: $('#createConfirmBtn'),
-        createCancel:  $('#createCancelBtn'),
-        createLoading: $('#createLoading'),
-        // 사용자 바
-        userBar:       $('#userBar'),
-        userBadge:     $('#userBadge'),
-        saveFavBtn:    $('#saveFavBtn'),
-        logoutBtn:     $('#logoutBtn'),
-        // 메인
-        tbody:         $('#songTableBody'),
-        totalCount:    $('#totalCount'),
-        filteredCount: $('#filteredCount'),
-        favCount:      $('#favCount'),
-        noResult:      $('#noResult'),
-        loading:       $('#loading'),
-        errorMsg:      $('#errorMsg'),
-        wrapper:       $('#songListWrapper'),
-        searchInput:   $('#searchInput'),
-        sentinel:      $('#scrollSentinel'),
-        loadingMore:   $('#loadingMore'),
-        // 모달
-        lyricsModal:   $('#lyricsModal'),
-        randomModal:   $('#randomModal'),
-        saveModal:     $('#saveConfirmModal'),
-        toast:         $('#toast'),
-        scrollTopBtn:  $('#scrollTopBtn'),
-        footer:        $('#appFooter'),
+        loginScreen: $('#loginScreen'),
+        loginStep:   $('#loginStep'),
+        createStep:  $('#createStep'),
+        appScreen:   $('#appScreen'),
+        userIdInput: $('#userIdInput'),
+        loginBtn:    $('#loginBtn'),
+        guestBtn:    $('#guestBtn'),
+        loginError:  $('#loginError'),
+        loginLoading:$('#loginLoading'),
+        createIdDisplay: $('#createIdDisplay'),
+        createConfirm:   $('#createConfirmBtn'),
+        createCancel:    $('#createCancelBtn'),
+        createLoading:   $('#createLoading'),
+        createError:     $('#createError'),
+        userBar:     $('#userBar'),
+        userBadge:   $('#userBadge'),
+        saveFavBtn:  $('#saveFavBtn'),
+        logoutBtn:   $('#logoutBtn'),
+        tbody:       $('#songTableBody'),
+        totalCount:  $('#totalCount'),
+        filteredCount:$('#filteredCount'),
+        favCount:    $('#favCount'),
+        noResult:    $('#noResult'),
+        loading:     $('#loading'),
+        errorMsg:    $('#errorMsg'),
+        wrapper:     $('#songListWrapper'),
+        searchInput: $('#searchInput'),
+        sentinel:    $('#scrollSentinel'),
+        loadingMore: $('#loadingMore'),
+        lyricsModal: $('#lyricsModal'),
+        randomModal: $('#randomModal'),
+        saveModal:   $('#saveConfirmModal'),
+        toast:       $('#toast'),
+        scrollTopBtn:$('#scrollTopBtn'),
+        footer:      $('#appFooter'),
     };
 }
 
 const songKey = s => `${s.artist}::${s.title}`;
 
 /* ══════════════════════════════════════
-   API 호출
+   API
    ══════════════════════════════════════ */
 async function apiGet(action, id) {
     const url = `${CONFIG.API_URL}?action=${encodeURIComponent(action)}&id=${encodeURIComponent(id)}`;
@@ -108,17 +104,14 @@ async function apiPost(action, id, extra = {}) {
 }
 
 /* ══════════════════════════════════════
-   🔐 로그인 플로우
+   🔐 로그인 (Step 1: 아이디 입력)
    ══════════════════════════════════════ */
-
-// -- UI 헬퍼 --
 function showLoginError(msg) {
     DOM.loginError.textContent = msg;
     DOM.loginError.style.display = 'block';
 }
-function hideLoginError() {
-    DOM.loginError.style.display = 'none';
-}
+function hideLoginError() { DOM.loginError.style.display = 'none'; }
+
 function setLoginLoading(on) {
     DOM.loginLoading.style.display = on ? 'flex' : 'none';
     DOM.loginBtn.disabled = on;
@@ -126,20 +119,17 @@ function setLoginLoading(on) {
     DOM.guestBtn.disabled = on;
 }
 
-// -- 메인 로그인 --
 async function handleLogin() {
     const id = DOM.userIdInput.value.trim();
 
-    // ① 빈 값 체크
     if (!id) {
         showLoginError('아이디를 입력해주세요');
         DOM.userIdInput.focus();
         return;
     }
 
-    // ② 유효성 검사
     if (!/^[a-zA-Z0-9가-힣_\-]{1,20}$/.test(id)) {
-        showLoginError('영문, 한글, 숫자, _, - 만 사용 가능합니다 (1~20자)');
+        showLoginError('영문, 한글, 숫자, _, - 만 사용 (1~20자)');
         DOM.userIdInput.focus();
         return;
     }
@@ -148,54 +138,44 @@ async function handleLogin() {
     setLoginLoading(true);
 
     try {
-        // ③ 서버에 아이디 존재 여부 확인
-        console.log(`🔍 아이디 확인: "${id}"`);
         const result = await apiGet('check', id);
 
         if (!result.success) {
-            showLoginError(result.error || '서버 오류가 발생했습니다');
+            showLoginError(result.error || '서버 오류');
             setLoginLoading(false);
             return;
         }
 
         if (result.exists) {
-            // ④-A: 존재하는 아이디 → 즐겨찾기 불러오기
-            console.log(`✅ 아이디 존재: "${id}" → 즐겨찾기 로드`);
+            // ✅ 존재 → 즐겨찾기 로드
             await loadAndEnter(id);
         } else {
-            // ④-B: 존재하지 않는 아이디 → 생성 확인 모달
-            console.log(`❌ 아이디 없음: "${id}" → 생성 확인 모달`);
+            // ❌ 없음 → 로그인 박스를 생성 확인 화면으로 전환
             setLoginLoading(false);
-            showCreateConfirm(id);
+            switchToCreateStep(id);
         }
 
     } catch (err) {
-        console.error('로그인 오류:', err);
-        showLoginError('서버에 연결할 수 없습니다. 네트워크를 확인해주세요.');
+        console.error(err);
+        showLoginError('서버에 연결할 수 없습니다');
         setLoginLoading(false);
     }
 }
 
-// -- 즐겨찾기 로드 후 앱 진입 --
 async function loadAndEnter(id) {
     try {
         const result = await apiGet('load', id);
 
         if (!result.success) {
-            showLoginError(result.error || '즐겨찾기를 불러올 수 없습니다');
+            showLoginError(result.error || '불러오기 실패');
             setLoginLoading(false);
             return;
         }
 
-        // 사용자 상태 설정
         currentUser = id;
-        favorites = new Set(
-            result.favorites.map(f => `${f.artist}::${f.title}`)
-        );
+        favorites = new Set(result.favorites.map(f => `${f.artist}::${f.title}`));
         serverFavKeys = new Set(favorites);
         favDirty = false;
-
-        // 자동 로그인용 저장
         localStorage.setItem(CONFIG.USER_KEY, id);
 
         setLoginLoading(false);
@@ -203,26 +183,46 @@ async function loadAndEnter(id) {
         showToast(`👋 ${id}님 환영합니다! (즐겨찾기 ${result.count}곡)`);
 
     } catch (err) {
-        console.error('로드 오류:', err);
+        console.error(err);
         showLoginError('즐겨찾기를 불러올 수 없습니다');
         setLoginLoading(false);
     }
 }
 
 /* ══════════════════════════════════════
-   🆕 새 아이디 생성 확인 모달
+   🆕 생성 확인 (Step 2: 같은 로그인 박스)
    ══════════════════════════════════════ */
-function showCreateConfirm(id) {
+function switchToCreateStep(id) {
     pendingCreateId = id;
-    DOM.createIdText.textContent = id;
-    DOM.createModal.classList.add('active');
-    DOM.createConfirm.disabled = false;
+    DOM.createIdDisplay.textContent = id;
+    DOM.createError.style.display = 'none';
     DOM.createLoading.style.display = 'none';
+    DOM.createConfirm.disabled = false;
+    DOM.createCancel.disabled = false;
+
+    // 화면 전환: 로그인 → 생성 확인
+    DOM.loginStep.style.display = 'none';
+    DOM.createStep.style.display = 'block';
+    // 다시 애니메이션
+    DOM.createStep.style.animation = 'none';
+    DOM.createStep.offsetHeight; // reflow
+    DOM.createStep.style.animation = '';
 }
 
-function closeCreateModal() {
-    DOM.createModal.classList.remove('active');
+function switchToLoginStep() {
+    // 생성 확인 → 로그인으로 돌아가기
     pendingCreateId = null;
+    DOM.createStep.style.display = 'none';
+    DOM.loginStep.style.display = 'block';
+    DOM.loginStep.style.animation = 'none';
+    DOM.loginStep.offsetHeight;
+    DOM.loginStep.style.animation = '';
+    DOM.userIdInput.focus();
+}
+
+function showCreateError(msg) {
+    DOM.createError.textContent = msg;
+    DOM.createError.style.display = 'block';
 }
 
 async function handleCreateConfirm() {
@@ -232,43 +232,41 @@ async function handleCreateConfirm() {
     DOM.createConfirm.disabled = true;
     DOM.createCancel.disabled = true;
     DOM.createLoading.style.display = 'flex';
+    DOM.createError.style.display = 'none';
 
     try {
-        console.log(`🆕 시트 생성 요청: "${id}"`);
         const result = await apiPost('create', id);
 
         if (result.success) {
-            console.log(`✅ 시트 생성 완료: "${id}"`);
-            closeCreateModal();
-
-            // 생성 직후 → 빈 즐겨찾기로 앱 진입
+            // 시트 생성 성공 → 앱 진입
             currentUser = id;
             favorites = new Set();
             serverFavKeys = new Set();
             favDirty = false;
             localStorage.setItem(CONFIG.USER_KEY, id);
 
+            DOM.createLoading.style.display = 'none';
             enterApp();
-            showToast(`🎉 "${id}" 아이디가 생성되었습니다! 즐겨찾기를 추가해보세요.`);
+            showToast(`🎉 "${id}" 아이디 생성 완료! 즐겨찾기를 추가해보세요.`);
         } else {
             DOM.createLoading.style.display = 'none';
             DOM.createConfirm.disabled = false;
             DOM.createCancel.disabled = false;
-            closeCreateModal();
-            showLoginError(result.error || '생성에 실패했습니다');
+            showCreateError(result.error || '생성에 실패했습니다');
         }
 
     } catch (err) {
-        console.error('생성 오류:', err);
+        console.error(err);
         DOM.createLoading.style.display = 'none';
         DOM.createConfirm.disabled = false;
         DOM.createCancel.disabled = false;
-        closeCreateModal();
-        showLoginError('서버에 연결할 수 없습니다');
+        showCreateError('서버에 연결할 수 없습니다');
     }
 }
 
-// -- 게스트 로그인 --
+/* ══════════════════════════════════════
+   게스트 / 앱 진입 / 로그아웃
+   ══════════════════════════════════════ */
 function loginAsGuest() {
     currentUser = null;
     favorites = new Set();
@@ -278,8 +276,12 @@ function loginAsGuest() {
     showToast('👤 게스트 모드: 즐겨찾기는 저장되지 않습니다');
 }
 
-// -- 앱 진입 --
 function enterApp() {
+    // 로그인 박스 초기화 (다음 로그인을 위해)
+    DOM.createStep.style.display = 'none';
+    DOM.loginStep.style.display = 'block';
+    pendingCreateId = null;
+
     DOM.loginScreen.classList.add('hidden');
     DOM.appScreen.style.display = 'block';
     DOM.footer.style.display = 'block';
@@ -300,7 +302,6 @@ function enterApp() {
     if (allSongs.length > 0) filterAndRender();
 }
 
-// -- 로그아웃 --
 function handleLogout() {
     if (favDirty && currentUser) {
         if (!confirm('저장하지 않은 변경사항이 있습니다.\n정말 로그아웃하시겠습니까?')) return;
@@ -314,6 +315,8 @@ function handleLogout() {
 
     DOM.appScreen.style.display = 'none';
     DOM.footer.style.display = 'none';
+
+    // 로그인 화면 리셋
     DOM.loginScreen.classList.remove('hidden');
     DOM.userIdInput.value = '';
     DOM.userIdInput.disabled = false;
@@ -330,26 +333,16 @@ function handleLogout() {
     filterAndRender();
 }
 
-// -- 자동 로그인 --
 async function tryAutoLogin() {
-    const savedId = localStorage.getItem(CONFIG.USER_KEY);
-    if (!savedId) return;
-
-    DOM.userIdInput.value = savedId;
+    const saved = localStorage.getItem(CONFIG.USER_KEY);
+    if (!saved) return;
+    DOM.userIdInput.value = saved;
     setLoginLoading(true);
-
     try {
-        const check = await apiGet('check', savedId);
-        if (check.success && check.exists) {
-            await loadAndEnter(savedId);
-        } else {
-            // 저장된 아이디가 삭제됨
-            localStorage.removeItem(CONFIG.USER_KEY);
-            setLoginLoading(false);
-        }
-    } catch {
-        setLoginLoading(false);
-    }
+        const check = await apiGet('check', saved);
+        if (check.success && check.exists) await loadAndEnter(saved);
+        else { localStorage.removeItem(CONFIG.USER_KEY); setLoginLoading(false); }
+    } catch { setLoginLoading(false); }
 }
 
 /* ══════════════════════════════════════
@@ -387,7 +380,6 @@ function toggleFavorite(song) {
     }
 }
 
-// -- 저장 --
 function showSaveModal() {
     if (!currentUser) return showToast('👤 게스트는 저장할 수 없습니다');
     if (!favDirty) return showToast('✅ 이미 저장되어 있습니다');
@@ -407,7 +399,6 @@ async function handleSave() {
             const sep = key.indexOf('::');
             return { artist: key.substring(0, sep), title: key.substring(sep + 2) };
         });
-
         const result = await apiPost('save', currentUser, { favorites: favList });
 
         if (result.success) {
@@ -417,11 +408,9 @@ async function handleSave() {
             closeSaveModal();
             showToast(`💾 ${result.count}곡 저장 완료!`);
         } else {
-            showToast(`❌ 저장 실패: ${result.error}`);
+            showToast(`❌ ${result.error}`);
         }
-    } catch {
-        showToast('❌ 서버에 연결할 수 없습니다');
-    }
+    } catch { showToast('❌ 서버 연결 실패'); }
 
     loadEl.style.display = 'none';
     $('#saveConfirmBtn').disabled = false;
@@ -440,12 +429,10 @@ function applyTheme(t) {
     $('#themeToggle').textContent = t === 'dark' ? '🌙' : '☀️';
     localStorage.setItem(CONFIG.THEME_KEY, t);
 }
-function toggleTheme() {
-    applyTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-}
+function toggleTheme() { applyTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
 
 /* ══════════════════════════════════════
-   초성 검색 + HTML 유틸
+   초성 + HTML
    ══════════════════════════════════════ */
 const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'.split('');
 const CHO_SET = new Set(CHO);
@@ -474,7 +461,7 @@ let _tt;
 function showToast(m){DOM.toast.textContent=m;DOM.toast.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>DOM.toast.classList.remove('show'),2500);}
 
 /* ══════════════════════════════════════
-   노래 데이터 로드
+   노래 데이터
    ══════════════════════════════════════ */
 async function fetchSongs(){
     try{
@@ -490,16 +477,13 @@ async function fetchSongs(){
             artist:(r['가수']||r[h[2]]||'').trim(),title:(r['곡명']||r[h[3]]||'').trim(),
             lyrics:(r['가사']||r[h[4]]||'').trim(),
         }));
-        console.log(`✅ ${allSongs.length}곡 로드`);
         buildGenreFilters();updateFavCount();
         DOM.loading.style.display='none';DOM.wrapper.style.display='block';
         filterAndRender();
-    }catch(e){console.error('❌',e);DOM.loading.style.display='none';DOM.errorMsg.style.display='block';}
+    }catch(e){console.error(e);DOM.loading.style.display='none';DOM.errorMsg.style.display='block';}
 }
 
-/* ══════════════════════════════════════
-   장르 필터
-   ══════════════════════════════════════ */
+/* 장르 필터 */
 function buildGenreFilters(){
     const w=$('#genreFilters'),f=document.createDocumentFragment();
     extractGenres(allSongs).forEach(g=>{const b=document.createElement('button');b.className='filter-btn';b.dataset.value=g;b.textContent=g;f.appendChild(b);});
@@ -507,16 +491,12 @@ function buildGenreFilters(){
     w.addEventListener('click',e=>{const b=e.target.closest('.filter-btn');if(!b)return;w.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeGenre=b.dataset.value;filterAndRender();});
 }
 
-/* ══════════════════════════════════════
-   정렬
-   ══════════════════════════════════════ */
+/* 정렬 */
 function sortSongs(s){if(!sortCol)return s;return[...s].sort((a,b)=>{const c=(a[sortCol]||'').localeCompare(b[sortCol]||'','ko');return sortDir==='desc'?-c:c;});}
 function handleSort(c){if(sortCol===c){sortDir=sortDir==='asc'?'desc':(sortCol=null,'asc');}else{sortCol=c;sortDir='asc';}updateSortUI();filterAndRender();}
 function updateSortUI(){$$('th.sortable').forEach(th=>{const a=th.dataset.sort===sortCol;th.classList.toggle('sort-active',a);th.querySelector('.sort-arrow').textContent=a?(sortDir==='asc'?'▲':'▼'):'⇅';});}
 
-/* ══════════════════════════════════════
-   필터 + 렌더
-   ══════════════════════════════════════ */
+/* 필터 + 렌더 */
 function filterAndRender(){
     const q=searchQuery;
     filteredSongs=allSongs.filter(s=>{
@@ -558,9 +538,7 @@ function renderMore(){
     });
 }
 
-/* ══════════════════════════════════════
-   무한 스크롤 + 스크롤 버튼
-   ══════════════════════════════════════ */
+/* 무한 스크롤 + 스크롤 맨위 */
 function initScrollObserver(){
     if(!('IntersectionObserver' in window))return;
     new IntersectionObserver(e=>{if(e[0].isIntersecting&&displayedCount<filteredSongs.length&&!isRendering)renderMore();},{rootMargin:'400px'}).observe(DOM.sentinel);
@@ -571,9 +549,7 @@ function initScrollTop(){
     DOM.scrollTopBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 }
 
-/* ══════════════════════════════════════
-   가사 모달 + 랜덤
-   ══════════════════════════════════════ */
+/* 가사 모달 */
 function openLyricsModal(s){
     $('#modalTitle').textContent=s.title;$('#modalArtist').textContent=s.artist;$('#modalGenre').textContent=s.genre;
     const g=$('#modalGender');g.textContent=(s.gender==='여'?'👩 ':'👨 ')+s.gender;g.className=`mtag ${s.gender==='여'?'gender-tag':'gender-tag-m'}`;
@@ -583,6 +559,7 @@ function openLyricsModal(s){
 }
 function closeLyricsModal(){DOM.lyricsModal.classList.remove('active');document.body.style.overflow='';}
 
+/* 랜덤 */
 function pickRandom(){
     const pool=filteredSongs.length?filteredSongs:allSongs;if(!pool.length)return showToast('🎵 곡이 없습니다!');
     const icon=$('#randomIcon');icon.classList.remove('spinning');void icon.offsetWidth;icon.classList.add('spinning');
@@ -595,9 +572,7 @@ function pickRandom(){
 }
 function closeRandomModal(){DOM.randomModal.classList.remove('active');document.body.style.overflow='';}
 
-/* ══════════════════════════════════════
-   유틸
-   ══════════════════════════════════════ */
+/* 유틸 */
 function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
 function bindFilterGroup(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('.filter-btn');if(!b)return;$(id).querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');cb(b.dataset.value);});}
 
@@ -613,18 +588,16 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSongs();
     tryAutoLogin();
 
-    // 테마
     $('#themeToggle').addEventListener('click', toggleTheme);
 
-    // ── 로그인 이벤트 ──
+    // ── 로그인 Step 1 ──
     DOM.loginBtn.addEventListener('click', handleLogin);
     DOM.userIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
     DOM.guestBtn.addEventListener('click', loginAsGuest);
 
-    // ── 생성 확인 모달 ──
+    // ── 생성 확인 Step 2 (로그인 박스 안) ──
     DOM.createConfirm.addEventListener('click', handleCreateConfirm);
-    DOM.createCancel.addEventListener('click', closeCreateModal);
-    $('.create-overlay').addEventListener('click', closeCreateModal);
+    DOM.createCancel.addEventListener('click', switchToLoginStep);
 
     // ── 사용자 바 ──
     DOM.logoutBtn.addEventListener('click', handleLogout);
@@ -636,12 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('.save-overlay').addEventListener('click', closeSaveModal);
 
     // ── 검색 ──
-    DOM.searchInput.addEventListener('input', debounce(e => {
-        searchQuery = e.target.value.trim(); filterAndRender();
-    }, 200));
-    $('#lyricsSearchToggle').addEventListener('change', e => {
-        searchLyrics = e.target.checked; if (searchQuery) filterAndRender();
-    });
+    DOM.searchInput.addEventListener('input', debounce(e => { searchQuery = e.target.value.trim(); filterAndRender(); }, 200));
+    $('#lyricsSearchToggle').addEventListener('change', e => { searchLyrics = e.target.checked; if (searchQuery) filterAndRender(); });
 
     // ── 필터 ──
     bindFilterGroup('#viewFilters', v => { activeView = v; filterAndRender(); });
@@ -650,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 정렬 ──
     $$('th.sortable').forEach(th => th.addEventListener('click', () => handleSort(th.dataset.sort)));
 
-    // ── 테이블 클릭 위임 ──
+    // ── 테이블 클릭 ──
     DOM.tbody.addEventListener('click', e => {
         const lBtn = e.target.closest('.lyrics-btn.has-lyrics');
         if (lBtn) return openLyricsModal(filteredSongs[+lBtn.dataset.idx]);
@@ -658,19 +627,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fBtn) return toggleFavorite(filteredSongs[+fBtn.dataset.idx]);
     });
 
-    // ── 모달 닫기 ──
+    // ── 모달 ──
     $('#modalClose').addEventListener('click', closeLyricsModal);
     $('#lyricsModal .modal-overlay').addEventListener('click', closeLyricsModal);
-
-    // ── 랜덤 ──
     $('#randomBtn').addEventListener('click', pickRandom);
     $('#randomClose').addEventListener('click', closeRandomModal);
     $('.random-overlay').addEventListener('click', closeRandomModal);
     $('#randomAgainBtn').addEventListener('click', pickRandom);
     $('#randomLyricsBtn').addEventListener('click', () => {
-        if (currentRandomSong?.lyrics.trim()) {
-            closeRandomModal(); setTimeout(() => openLyricsModal(currentRandomSong), 250);
-        }
+        if (currentRandomSong?.lyrics.trim()) { closeRandomModal(); setTimeout(() => openLyricsModal(currentRandomSong), 250); }
     });
     $('#randomFavBtn').addEventListener('click', () => {
         if (!currentRandomSong) return;
@@ -683,11 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── 키보드 ──
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeLyricsModal(); closeRandomModal(); closeSaveModal(); closeCreateModal(); }
+        if (e.key === 'Escape') { closeLyricsModal(); closeRandomModal(); closeSaveModal(); }
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); DOM.searchInput.focus(); DOM.searchInput.select(); }
     });
 
-    // ── 페이지 나가기 경고 ──
     window.addEventListener('beforeunload', e => {
         if (favDirty && currentUser) { e.preventDefault(); e.returnValue = ''; }
     });
