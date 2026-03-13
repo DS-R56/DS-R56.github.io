@@ -4,60 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>🎵 My Song List</title>
-
-    <!-- SEO -->
     <meta name="description" content="나만의 노래 리스트 - 검색, 즐겨찾기, 가사 보기, 랜덤 추천">
     <meta name="theme-color" content="#0f0c29" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- OG (공유 미리보기) -->
-    <meta property="og:title" content="🎵 안아영의 Song List">
-    <meta property="og:description" content="안아영의 노래 리스트">
-    <meta property="og:type" content="website">
-
-    <!-- Favicon (이모지) -->
+    <meta property="og:title" content="🎵 My Song List">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
-
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-
-    <!-- Preconnect (외부 리소스 연결 속도 ↑) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://docs.google.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-
-    <!-- Font (swap으로 깜빡임 방지) -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
-
-    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
-
-    <!-- PapaParse (defer로 렌더 차단 방지) -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-    <!-- App JS -->
     <script defer src="script.js"></script>
 </head>
 <body>
 
+<!-- ===== 로그인 화면 ===== -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-box">
+        <div class="login-icon">🎤</div>
+        <h1 class="login-title">My Song List</h1>
+        <p class="login-desc">아이디를 입력하여 나만의 즐겨찾기를 관리하세요</p>
+
+        <div class="login-form">
+            <input type="text" id="userIdInput"
+                   placeholder="아이디 입력 (영문, 한글, 숫자)"
+                   maxlength="20" autocomplete="off" spellcheck="false"
+                   inputmode="text">
+            <button id="loginBtn" class="login-btn">시작하기</button>
+        </div>
+
+        <button id="guestBtn" class="guest-btn">👤 게스트로 둘러보기</button>
+
+        <div id="loginError" class="login-error" style="display:none;"></div>
+        <div id="loginLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>확인 중...</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 새 아이디 생성 확인 모달 ===== -->
+<div id="createModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-overlay create-overlay"></div>
+    <div class="create-content">
+        <div class="create-icon">🆕</div>
+        <h2>새 아이디 만들기</h2>
+        <p class="create-id-display" id="createIdDisplay"></p>
+        <p class="create-desc">이 아이디로 새 즐겨찾기 리스트를 만들까요?</p>
+        <div class="create-actions">
+            <button id="createConfirmBtn" class="ca-btn ca-confirm">✅ 만들기</button>
+            <button id="createCancelBtn" class="ca-btn ca-cancel">취소</button>
+        </div>
+        <div id="createLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>생성 중...</span>
+        </div>
+    </div>
+</div>
+
 <!-- ===== 테마 토글 ===== -->
 <button id="themeToggle" class="theme-toggle" aria-label="테마 변경">🌙</button>
 
-<!-- ===== 스크롤 맨위 버튼 ===== -->
+<!-- ===== 스크롤 맨위 ===== -->
 <button id="scrollTopBtn" class="scroll-top-btn" aria-label="맨 위로">↑</button>
 
-<div class="container">
+<!-- ===== 메인 앱 (로그인 후 표시) ===== -->
+<div id="appScreen" class="container" style="display:none;">
 
-    <!-- ===== 헤더 ===== -->
+    <!-- 헤더 -->
     <header>
         <h1>🎤 나의 노래 리스트</h1>
+
+        <!-- 사용자 정보 바 -->
+        <div class="user-bar" id="userBar" style="display:none;">
+            <span class="user-badge" id="userBadge">👤 게스트</span>
+            <button id="saveFavBtn" class="save-fav-btn" style="display:none;">💾 저장</button>
+            <button id="logoutBtn" class="logout-btn">🚪 로그아웃</button>
+        </div>
+
         <p class="subtitle">
             <span id="filteredCount">0</span> / <span id="totalCount">0</span>곡
         </p>
+
         <button id="randomBtn" class="random-btn" aria-label="랜덤 추천">🎲 랜덤 추천</button>
+
         <div class="search-wrapper">
             <input type="text" id="searchInput" inputmode="search"
                    placeholder="🔍 제목, 가수 검색 (초성 가능: ㅎㅂㄹㄱ)"
@@ -71,7 +104,7 @@
         </div>
     </header>
 
-    <!-- ===== 필터 ===== -->
+    <!-- 필터 -->
     <div class="filters">
         <div class="filter-group">
             <span class="filter-label">보기</span>
@@ -111,7 +144,7 @@
         <button id="retryBtn" class="retry-btn">🔄 다시 시도</button>
     </div>
 
-    <!-- ===== 테이블 ===== -->
+    <!-- 테이블 -->
     <div id="songListWrapper" style="display:none;">
         <table>
             <thead>
@@ -126,15 +159,9 @@
             </thead>
             <tbody id="songTableBody"></tbody>
         </table>
-
         <p id="noResult" class="no-result" style="display:none;">검색 결과가 없습니다 😢</p>
-
-        <!-- 무한스크롤 감지용 -->
         <div id="scrollSentinel" class="scroll-sentinel"></div>
-
-        <div id="loadingMore" class="loading-more" style="display:none;">
-            <div class="spinner-small"></div>
-        </div>
+        <div id="loadingMore" class="loading-more" style="display:none;"><div class="spinner-small"></div></div>
     </div>
 </div>
 
@@ -164,7 +191,7 @@
         <button class="modal-close" id="randomClose" aria-label="닫기">&times;</button>
         <div class="random-icon" id="randomIcon">🎲</div>
         <div class="random-label">오늘의 추천곡</div>
-        <div class="random-card" id="randomCard">
+        <div class="random-card">
             <div class="random-title" id="randomTitle"></div>
             <div class="random-artist" id="randomArtist"></div>
             <div class="random-meta">
@@ -180,11 +207,29 @@
     </div>
 </div>
 
+<!-- 저장 확인 모달 -->
+<div id="saveConfirmModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-overlay save-overlay"></div>
+    <div class="create-content">
+        <div class="create-icon">💾</div>
+        <h2>즐겨찾기 저장</h2>
+        <p class="create-desc" id="saveConfirmText"></p>
+        <div class="create-actions">
+            <button id="saveConfirmBtn" class="ca-btn ca-confirm">💾 저장하기</button>
+            <button id="saveCancelBtn" class="ca-btn ca-cancel">취소</button>
+        </div>
+        <div id="saveLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>저장 중...</span>
+        </div>
+    </div>
+</div>
+
 <!-- 토스트 -->
 <div id="toast" class="toast" role="alert"></div>
 
-<footer>
-    <p>📊 Google Sheets 연동 | ⭐ 즐겨찾기는 이 브라우저에 저장됩니다</p>
+<footer id="appFooter" style="display:none;">
+    <p>📊 Google Sheets 연동 | ⭐ 즐겨찾기: <span id="footerSaveInfo">클라우드 저장</span></p>
 </footer>
 
 </body>
