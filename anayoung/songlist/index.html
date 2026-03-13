@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>🎵 My Song List</title>
-    <meta name="description" content="나만의 노래 리스트 - 검색, 즐겨찾기, 가사 보기, 랜덤 추천">
+    <meta name="description" content="나만의 노래 리스트">
     <meta name="theme-color" content="#0f0c29" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f0f2f5" media="(prefers-color-scheme: light)">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta property="og:title" content="🎵 My Song List">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -21,82 +20,76 @@
 </head>
 <body>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       로그인 화면                      ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- ╔══════════════════════════════════════════╗
+     ║  1) 로그인 화면 (z-index: 5000)          ║
+     ╚══════════════════════════════════════════╝ -->
 <div id="loginScreen" class="login-screen">
-    <div class="login-box" id="loginBox">
+    <div class="login-box">
+        <div class="login-icon">🎤</div>
+        <h1 class="login-title">My Song List</h1>
+        <p class="login-desc">아이디를 입력하여 나만의 즐겨찾기를 관리하세요</p>
 
-        <!-- ── 상태 1: 아이디 입력 (기본) ── -->
-        <div id="loginStep" class="login-step">
-            <div class="login-icon">🎤</div>
-            <h1 class="login-title">My Song List</h1>
-            <p class="login-desc">아이디를 입력하여 나만의 즐겨찾기를 관리하세요</p>
-
-            <div class="login-form">
-                <input type="text" id="userIdInput"
-                       placeholder="아이디 입력 (영문, 한글, 숫자)"
-                       maxlength="20" autocomplete="off" spellcheck="false">
-                <button id="loginBtn" class="login-btn">시작하기</button>
-            </div>
-
-            <button id="guestBtn" class="guest-btn">👤 게스트로 둘러보기</button>
-
-            <!-- 에러 메시지 -->
-            <div id="loginError" class="login-error" style="display:none;"></div>
-
-            <!-- 로딩 -->
-            <div id="loginLoading" class="login-loading" style="display:none;">
-                <div class="spinner-small"></div>
-                <span>확인 중...</span>
-            </div>
+        <div class="login-form">
+            <input type="text" id="userIdInput"
+                   placeholder="아이디 입력 (영문, 한글, 숫자)"
+                   maxlength="20" autocomplete="off" spellcheck="false">
+            <button id="loginBtn" class="login-btn">시작하기</button>
         </div>
 
-        <!-- ── 상태 2: 아이디 생성 확인 ── -->
-        <div id="createStep" class="login-step" style="display:none;">
-            <div class="create-icon">🆕</div>
-            <h2 class="create-heading">아이디가 존재하지 않습니다</h2>
+        <button id="guestBtn" class="guest-btn">👤 게스트로 둘러보기</button>
 
-            <div class="create-id-box">
-                <span class="create-id-label">입력한 아이디</span>
-                <span class="create-id-value" id="createIdDisplay"></span>
-            </div>
+        <div id="loginError" class="login-error" style="display:none;"></div>
 
-            <p class="create-question">이 아이디로 새 즐겨찾기 리스트를 만들까요?</p>
-
-            <div class="create-actions">
-                <button id="createConfirmBtn" class="create-confirm-btn">✅ 새로 만들기</button>
-                <button id="createCancelBtn" class="create-cancel-btn">← 돌아가기</button>
-            </div>
-
-            <!-- 생성 중 로딩 -->
-            <div id="createLoading" class="login-loading" style="display:none;">
-                <div class="spinner-small"></div>
-                <span>아이디 생성 중...</span>
-            </div>
-
-            <!-- 생성 에러 -->
-            <div id="createError" class="login-error" style="display:none;"></div>
+        <div id="loginLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>확인 중...</span>
         </div>
-
     </div>
 </div>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       테마 토글 + 스크롤              ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- ╔══════════════════════════════════════════╗
+     ║  2) 아이디 생성 확인 오버레이             ║
+     ║     (z-index: 6000 - 로그인 위에 덮음)    ║
+     ╚══════════════════════════════════════════╝ -->
+<div id="createOverlay" class="create-overlay-screen">
+    <div class="create-overlay-bg"></div>
+    <div class="create-box">
+        <div class="create-icon">🆕</div>
+        <h2 class="create-heading">아이디가 존재하지 않습니다</h2>
+
+        <div class="create-id-card">
+            <span class="create-id-label">입력한 아이디</span>
+            <span class="create-id-value" id="createIdDisplay"></span>
+        </div>
+
+        <p class="create-question">이 아이디로 새 즐겨찾기 리스트를 만들까요?</p>
+
+        <div class="create-actions">
+            <button id="createConfirmBtn" class="create-confirm-btn">✅ 새로 만들기</button>
+            <button id="createCancelBtn" class="create-cancel-btn">← 돌아가기</button>
+        </div>
+
+        <div id="createLoading" class="login-loading" style="display:none;">
+            <div class="spinner-small"></div>
+            <span>아이디 생성 중...</span>
+        </div>
+
+        <div id="createError" class="login-error" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- 테마 토글 -->
 <button id="themeToggle" class="theme-toggle" aria-label="테마 변경">🌙</button>
 <button id="scrollTopBtn" class="scroll-top-btn" aria-label="맨 위로">↑</button>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       메인 앱 (로그인 후 표시)         ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- ╔══════════════════════════════════════════╗
+     ║  3) 메인 앱 (로그인 후 표시)              ║
+     ╚══════════════════════════════════════════╝ -->
 <div id="appScreen" class="container" style="display:none;">
 
     <header>
         <h1>🎤 나의 노래 리스트</h1>
 
-        <!-- 사용자 바 -->
         <div class="user-bar" id="userBar" style="display:none;">
             <span class="user-badge" id="userBadge">👤 게스트</span>
             <button id="saveFavBtn" class="save-fav-btn" style="display:none;">💾 저장됨</button>
@@ -122,7 +115,6 @@
         </div>
     </header>
 
-    <!-- 필터 -->
     <div class="filters">
         <div class="filter-group">
             <span class="filter-label">보기</span>
@@ -149,7 +141,6 @@
         </div>
     </div>
 
-    <!-- 로딩/에러 -->
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <p>노래 목록을 불러오는 중...</p>
@@ -161,7 +152,6 @@
         <button id="retryBtn" class="retry-btn">🔄 다시 시도</button>
     </div>
 
-    <!-- 테이블 -->
     <div id="songListWrapper" style="display:none;">
         <table>
             <thead>
@@ -182,9 +172,7 @@
     </div>
 </div>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       가사 모달                        ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- 가사 모달 -->
 <div id="lyricsModal" class="modal" role="dialog">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -203,11 +191,9 @@
     </div>
 </div>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       랜덤 모달                        ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- 랜덤 모달 -->
 <div id="randomModal" class="modal" role="dialog">
-    <div class="modal-overlay random-overlay"></div>
+    <div class="modal-overlay random-modal-overlay"></div>
     <div class="random-content">
         <button class="modal-close" id="randomClose">&times;</button>
         <div class="random-icon" id="randomIcon">🎲</div>
@@ -228,11 +214,9 @@
     </div>
 </div>
 
-<!-- ╔═══════════════════════════════════════╗
-     ║       저장 확인 모달                    ║
-     ╚═══════════════════════════════════════╝ -->
+<!-- 저장 확인 모달 -->
 <div id="saveConfirmModal" class="modal" role="dialog">
-    <div class="modal-overlay save-overlay"></div>
+    <div class="modal-overlay save-modal-overlay"></div>
     <div class="save-confirm-box">
         <div class="save-icon">💾</div>
         <h2>즐겨찾기 저장</h2>
@@ -248,7 +232,6 @@
     </div>
 </div>
 
-<!-- 토스트 -->
 <div id="toast" class="toast" role="alert"></div>
 
 <footer id="appFooter" style="display:none;">
