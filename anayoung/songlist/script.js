@@ -7,7 +7,7 @@ const CONFIG = Object.freeze({
     SONG_RANGE : 'E:I',
 
     // ⭐ Apps Script 배포 URL
-    API_URL    : 'YOUR_APPS_SCRIPT_URL_HERE',
+    API_URL    : 'https://script.google.com/macros/s/AKfycbwSK3iHaV3QbyEFpW347SsOaG6ZrkE3Yx9WLrAM-5pmETbkYDgFMN08HWJpYVstUpnu/exec',
 
     PER_PAGE   : 80,
     CACHE_KEY  : 'songlist_cache',
