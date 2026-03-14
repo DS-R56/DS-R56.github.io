@@ -1,4 +1,4 @@
-const CACHE_NAME = 'songlist-v3';
+const CACHE_NAME = 'songlist-v2.1.1';
 
 const STATIC_ASSETS = [
     './',
