@@ -4,7 +4,7 @@
 const CONFIG = Object.freeze({
     SONG_SS_ID : '1sAsXEl14Vr4k1hlAhdHD5JpIjWu4eFQgwo2KP9nP8oU',
     SONG_SHEET : '데이터베이스',
-    SONG_RANGE : 'E:I',
+    SONG_RANGE : 'E:J',   // ★ CHANGED: E:I → E:J (J열 = 부른횟수)
     API_URL    : 'https://script.google.com/macros/s/AKfycbwSK3iHaV3QbyEFpW347SsOaG6ZrkE3Yx9WLrAM-5pmETbkYDgFMN08HWJpYVstUpnu/exec',
     PER_PAGE   : 80,
     CACHE_KEY  : 'songlist_cache',
@@ -560,12 +560,13 @@ async function fetchSongs() {
         allSongs = parsed.data
             .filter(row => (row['곡명'] || row[headers[3]] || '').trim())
             .map((row, i) => ({
-                id:     i,
-                genre:  (row['장르'] || row[headers[0]] || '').trim(),
-                gender: (row['성별'] || row[headers[1]] || '').trim(),
-                artist: (row['가수'] || row[headers[2]] || '').trim(),
-                title:  (row['곡명'] || row[headers[3]] || '').trim(),
-                lyrics: (row['가사'] || row[headers[4]] || '').trim(),
+                id:        i,
+                genre:     (row['장르']     || row[headers[0]] || '').trim(),
+                gender:    (row['성별']     || row[headers[1]] || '').trim(),
+                artist:    (row['가수']     || row[headers[2]] || '').trim(),
+                title:     (row['곡명']     || row[headers[3]] || '').trim(),
+                lyrics:    (row['가사']     || row[headers[4]] || '').trim(),
+                sungCount: parseInt(row['부른횟수'] || row[headers[5]] || '0', 10) || 0,  // ★ NEW: J열 부른횟수
             }));
 
         buildGenreFilters();
@@ -667,8 +668,6 @@ function filterAndRender() {
 
 /* ============================================
    렌더링 (페이지네이션)
-   ★ 열 순서: # → ♡ → 가수 → 곡명 → 📜 → 장르 → 성별
-   ★ 하트: ♡ (빈) / ❤️ (채운)
    ============================================ */
 function renderMore() {
     if (isRendering) return;
@@ -697,44 +696,28 @@ function renderMore() {
 
             const tr = document.createElement('tr');
 
-            // 장르 뱃지
             const genreBadges = parseGenres(song.genre)
                 .map(g => `<span class="badge badge-genre">${esc(g)}</span>`)
                 .join('');
 
-            // 성별
             const gCls  = song.gender === '여' ? 'badge-female' : 'badge-male';
             const gIcon = song.gender === '여' ? '👩' : '👨';
 
-            // ★ 열 순서: # | ♡ | 가수 | 곡명 | 📜 | 장르 | 성별
             tr.innerHTML =
-                // 1) #
                 `<td>${i + 1}</td>` +
-
-                // 2) ♡ 즐겨찾기 (빈 하트 ♡ 기본)
                 `<td>` +
                     `<button class="fav-btn${isFav ? ' active' : ''}" ` +
                         `data-key="${esc(key)}" data-idx="${i}">` +
                         `${isFav ? '❤️' : '♡'}` +
                     `</button>` +
                 `</td>` +
-
-                // 3) 가수
                 `<td class="song-artist">${hilite(song.artist, searchQuery)}</td>` +
-
-                // 4) 곡명
                 `<td class="song-title">${hilite(song.title, searchQuery)}</td>` +
-
-                // 5) 가사 버튼
                 `<td>` +
                     `<button class="lyrics-btn ${hasLyr ? 'has-lyrics' : 'no-lyrics'}" ` +
                         `data-idx="${i}" title="${hasLyr ? '가사 보기' : '가사 없음'}">📜</button>` +
                 `</td>` +
-
-                // 6) 장르
                 `<td>${genreBadges}</td>` +
-
-                // 7) 성별
                 `<td><span class="badge ${gCls}">${gIcon} ${esc(song.gender)}</span></td>`;
 
             frag.appendChild(tr);
@@ -796,7 +779,38 @@ function closeLyricsModal() {
 }
 
 /* ============================================
-   랜덤 추천
+   ★ NEW: 가중치 랜덤 선택
+   부른횟수가 적은 곡일수록 높은 확률
+   공식: weight = 1 / (sungCount + 1) ^ 0.3
+   - 0회: 1.000 (가장 높음)
+   - 50회: 0.286 (가장 낮음)
+   - 최대 약 3.5배 차이 → 완만한 가중치
+   ============================================ */
+function weightedRandomPick(pool) {
+    if (!pool.length) return null;
+    if (pool.length === 1) return pool[0];
+
+    const EXPONENT = 0.3;  // 작을수록 차이가 완만 (0.3 ≈ 3~4배 차이)
+
+    // 각 곡의 가중치 계산
+    const weights = pool.map(song =>
+        1 / Math.pow((song.sungCount || 0) + 1, EXPONENT)
+    );
+
+    // 가중치 합계
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+    // 가중치 기반 랜덤 선택
+    let r = Math.random() * totalWeight;
+    for (let i = 0; i < pool.length; i++) {
+        r -= weights[i];
+        if (r <= 0) return pool[i];
+    }
+    return pool[pool.length - 1];
+}
+
+/* ============================================
+   랜덤 추천 (★ CHANGED: 가중치 적용)
    ============================================ */
 function pickRandom() {
     const pool = filteredSongs.length ? filteredSongs : allSongs;
@@ -807,7 +821,7 @@ function pickRandom() {
     void icon.offsetWidth;
     icon.classList.add('spinning');
 
-    const song = pool[Math.random() * pool.length | 0];
+    const song = weightedRandomPick(pool);  // ★ CHANGED: 균등 랜덤 → 가중치 랜덤
     currentRandomSong = song;
 
     $('#randomTitle').textContent  = song.title;
@@ -856,30 +870,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSongs();
     tryAutoLogin();
 
-    // 테마
     $('#themeToggle').addEventListener('click', toggleTheme);
 
-    // 로그인
     DOM.loginOpenBtn.addEventListener('click', () => showLoginOverlay());
     DOM.loginBtn.addEventListener('click', handleLogin);
     DOM.userIdInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
     $('#loginCloseBtn').addEventListener('click', hideLoginOverlay);
     $('#loginOverlayBg').addEventListener('click', hideLoginOverlay);
 
-    // 생성 확인
     DOM.createConfirm.addEventListener('click', handleCreateConfirm);
     DOM.createCancel.addEventListener('click', () => { hideCreateOverlay(); showLoginOverlay(); });
     $('#createCloseBtn').addEventListener('click', hideCreateOverlay);
     $('#createOverlayBg').addEventListener('click', hideCreateOverlay);
 
-    // 로그아웃 / 저장
     DOM.logoutBtn.addEventListener('click', handleLogout);
     DOM.saveFavBtn.addEventListener('click', () => showSaveModal());
     $('#saveConfirmBtn').addEventListener('click', handleSave);
     $('#saveCancelBtn').addEventListener('click', closeSaveModal);
     $('.save-modal-overlay').addEventListener('click', closeSaveModal);
 
-    // 검색
     DOM.searchInput.addEventListener('input', debounce((e) => {
         searchQuery = e.target.value.trim();
         filterAndRender();
@@ -889,7 +898,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchQuery) filterAndRender();
     });
 
-    // 보기 필터 (즐겨찾기 로그인 가드)
     $('#viewFilters').addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn) return;
@@ -901,7 +909,6 @@ document.addEventListener('DOMContentLoaded', () => {
         filterAndRender();
     });
 
-    // 성별 필터
     $('#genderFilters').addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn) return;
@@ -911,10 +918,8 @@ document.addEventListener('DOMContentLoaded', () => {
         filterAndRender();
     });
 
-    // 정렬
     $$('th.sortable').forEach(th => th.addEventListener('click', () => handleSort(th.dataset.sort)));
 
-    // 테이블 클릭 위임
     DOM.tbody.addEventListener('click', (e) => {
         const lBtn = e.target.closest('.lyrics-btn.has-lyrics');
         if (lBtn) return openLyricsModal(filteredSongs[+lBtn.dataset.idx]);
@@ -922,11 +927,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fBtn) return toggleFavorite(filteredSongs[+fBtn.dataset.idx]);
     });
 
-    // 가사 모달
     $('#modalClose').addEventListener('click', closeLyricsModal);
     $('.lyrics-modal-overlay').addEventListener('click', closeLyricsModal);
 
-    // 랜덤
     $('#randomBtn').addEventListener('click', pickRandom);
     $('#randomClose').addEventListener('click', closeRandomModal);
     $('.random-modal-overlay').addEventListener('click', closeRandomModal);
@@ -945,22 +948,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 재시도
     $('#retryBtn').addEventListener('click', () => { sessionStorage.removeItem(CONFIG.CACHE_KEY); fetchSongs(); });
 
-    // 키보드
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') { closeLyricsModal(); closeRandomModal(); closeSaveModal(); hideLoginOverlay(); hideCreateOverlay(); }
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); DOM.searchInput.focus(); DOM.searchInput.select(); }
     });
 
-    // 나가기 경고
     window.addEventListener('beforeunload', (e) => {
         if (favDirty && currentUser) { e.preventDefault(); e.returnValue = ''; }
     });
 });
 
-// Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
