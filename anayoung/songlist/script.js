@@ -4,7 +4,7 @@
 const CONFIG = Object.freeze({
     SONG_SS_ID : '1sAsXEl14Vr4k1hlAhdHD5JpIjWu4eFQgwo2KP9nP8oU',
     SONG_SHEET : '데이터베이스',
-    SONG_RANGE : 'E:J',   // ★ CHANGED: E:I → E:J (J열 = 부른횟수)
+    SONG_RANGE : 'E:K',   // ★ CHANGED: E:J → E:K (J=미션곡, K=부른횟수)
     API_URL    : 'https://script.google.com/macros/s/AKfycbwSK3iHaV3QbyEFpW347SsOaG6ZrkE3Yx9WLrAM-5pmETbkYDgFMN08HWJpYVstUpnu/exec',
     PER_PAGE   : 80,
     CACHE_KEY  : 'songlist_cache',
@@ -521,6 +521,11 @@ function extractGenres(songs) {
     return [...s].sort((a, b) => a.localeCompare(b, 'ko'));
 }
 
+// ★ NEW: 미션곡 M 뱃지 HTML 생성
+function missionHtml(song) {
+    return song.mission ? '<span class="mission-badge">M</span>' : '';
+}
+
 /* ============================================
    토스트
    ============================================ */
@@ -557,6 +562,7 @@ async function fetchSongs() {
         const parsed  = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
         const headers = parsed.meta.fields || [];
 
+        // ★ CHANGED: E=장르[0], F=성별[1], G=가수[2], H=곡명[3], I=가사[4], J=미션곡[5], K=부른횟수[6]
         allSongs = parsed.data
             .filter(row => (row['곡명'] || row[headers[3]] || '').trim())
             .map((row, i) => ({
@@ -566,7 +572,8 @@ async function fetchSongs() {
                 artist:    (row['가수']     || row[headers[2]] || '').trim(),
                 title:     (row['곡명']     || row[headers[3]] || '').trim(),
                 lyrics:    (row['가사']     || row[headers[4]] || '').trim(),
-                sungCount: parseInt(row['부른횟수'] || row[headers[5]] || '0', 10) || 0,  // ★ NEW: J열 부른횟수
+                mission:   (row['미션곡']   || row[headers[5]] || '').trim().toUpperCase() === 'TRUE',  // ★ NEW: J열
+                sungCount: parseInt(row['부른횟수'] || row[headers[6]] || '0', 10) || 0,                // ★ CHANGED: K열
             }));
 
         buildGenreFilters();
@@ -668,6 +675,7 @@ function filterAndRender() {
 
 /* ============================================
    렌더링 (페이지네이션)
+   ★ 곡명 옆에 미션곡 M 뱃지 표시
    ============================================ */
 function renderMore() {
     if (isRendering) return;
@@ -712,7 +720,10 @@ function renderMore() {
                     `</button>` +
                 `</td>` +
                 `<td class="song-artist">${hilite(song.artist, searchQuery)}</td>` +
-                `<td class="song-title">${hilite(song.title, searchQuery)}</td>` +
+
+                // ★ CHANGED: 곡명 + 미션곡 M 뱃지
+                `<td class="song-title">${hilite(song.title, searchQuery)}${missionHtml(song)}</td>` +
+
                 `<td>` +
                     `<button class="lyrics-btn ${hasLyr ? 'has-lyrics' : 'no-lyrics'}" ` +
                         `data-idx="${i}" title="${hasLyr ? '가사 보기' : '가사 없음'}">📜</button>` +
@@ -755,10 +766,11 @@ function initScrollTop() {
 }
 
 /* ============================================
-   가사 모달
+   가사 모달 (★ CHANGED: M 뱃지 표시)
    ============================================ */
 function openLyricsModal(song) {
-    $('#modalTitle').textContent  = song.title;
+    // ★ CHANGED: innerHTML로 M 뱃지 포함
+    $('#modalTitle').innerHTML   = esc(song.title) + missionHtml(song);
     $('#modalArtist').textContent = song.artist;
     $('#modalGenre').textContent  = song.genre;
 
@@ -779,33 +791,20 @@ function closeLyricsModal() {
 }
 
 /* ============================================
-   ★ NEW: 가중치 랜덤 선택
-   부른횟수가 적은 곡일수록 높은 확률
-   공식: weight = 1 / (sungCount + 1) ^ 0.3
-   - 0회: 1.000 (가장 높음)
-   - 50회: 0.286 (가장 낮음)
-   - 최대 약 3.5배 차이 → 완만한 가중치
+   가중치 랜덤 선택
    ============================================ */
 function weightedRandomPick(pool) {
     if (!pool.length) return null;
     if (pool.length === 1) return pool[0];
 
-    const EXPONENT = 0;  // 작을수록 차이가 완만 (0.3 ≈ 3~4배 차이)
-   /*
-    const EXPONENT = 0;    // 균등 랜덤
-    const EXPONENT = 0.3;  // 약한 가중치 (추천)
-    const EXPONENT = 0.5;  // 중간 가중치
-   */
+    const EXPONENT = 0.3;
 
-    // 각 곡의 가중치 계산
     const weights = pool.map(song =>
         1 / Math.pow((song.sungCount || 0) + 1, EXPONENT)
     );
 
-    // 가중치 합계
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
-    // 가중치 기반 랜덤 선택
     let r = Math.random() * totalWeight;
     for (let i = 0; i < pool.length; i++) {
         r -= weights[i];
@@ -815,7 +814,7 @@ function weightedRandomPick(pool) {
 }
 
 /* ============================================
-   랜덤 추천 (★ CHANGED: 가중치 적용)
+   랜덤 추천 (★ CHANGED: M 뱃지 표시)
    ============================================ */
 function pickRandom() {
     const pool = filteredSongs.length ? filteredSongs : allSongs;
@@ -826,10 +825,11 @@ function pickRandom() {
     void icon.offsetWidth;
     icon.classList.add('spinning');
 
-    const song = weightedRandomPick(pool);  // ★ CHANGED: 균등 랜덤 → 가중치 랜덤
+    const song = weightedRandomPick(pool);
     currentRandomSong = song;
 
-    $('#randomTitle').textContent  = song.title;
+    // ★ CHANGED: innerHTML로 M 뱃지 포함
+    $('#randomTitle').innerHTML   = esc(song.title) + missionHtml(song);
     $('#randomArtist').textContent = song.artist;
     $('#randomGenre').textContent  = song.genre;
 
