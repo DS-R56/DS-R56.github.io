@@ -483,7 +483,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     vertical-align: middle;
     letter-spacing: 0;             /* ✅ -0.5px → 0 (오른쪽 치우침 해결) */
     flex-shrink: 0;
-    padding: 0;                    /* ✅ 혹시 상속된 padding 제거 */
+    padding: 0 1px 1px 0;    /* 위 오른쪽 아래 왼쪽 순서로 조정 */
     text-indent: 0;                /* ✅ 혹시 상속된 indent 제거 */
 }
 
