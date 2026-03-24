@@ -469,46 +469,48 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     display: inline-block;
     position: relative;
     background: #e53935;
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 800;
-    font-style: normal;
     width: 20px;
     height: 20px;
-    line-height: 20px;
-    text-align: center;
     border-radius: 5px;
     margin-left: 6px;
     vertical-align: middle;
-    letter-spacing: 0;
     flex-shrink: 0;
-    padding: 0;
 }
 
-/* ✅ M 글자를 왼쪽 위로 밀어서 중앙 맞추기 */
+/* M 글자를 정중앙에 배치 */
 .mission-badge::after {
     content: "M";
+    color: #fff;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    font-weight: 800;
+    font-style: normal;
+    letter-spacing: 0;
+    line-height: 1;
 }
 
 /* 랜덤 모달 내 M 뱃지 */
 .random-title .mission-badge {
-    font-size: 1.2rem;
     width: 26px;
     height: 26px;
     border-radius: 6px;
     margin-left: 8px;
 }
+.random-title .mission-badge::after {
+    font-size: 1.2rem;
+}
 
 /* 가사 모달 내 M 뱃지 */
 .modal-header h2 .mission-badge {
-    font-size: 0.9rem;
     width: 22px;
     height: 22px;
     border-radius: 5px;
+}
+.modal-header h2 .mission-badge::after {
+    font-size: 0.9rem;
 }
 
 /* ============================================
