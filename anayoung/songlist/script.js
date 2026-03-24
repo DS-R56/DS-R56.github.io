@@ -790,7 +790,12 @@ function weightedRandomPick(pool) {
     if (!pool.length) return null;
     if (pool.length === 1) return pool[0];
 
-    const EXPONENT = 0.3;  // 작을수록 차이가 완만 (0.3 ≈ 3~4배 차이)
+    const EXPONENT = 0;  // 작을수록 차이가 완만 (0.3 ≈ 3~4배 차이)
+   /*
+    const EXPONENT = 0;    // 균등 랜덤
+    const EXPONENT = 0.3;  // 약한 가중치 (추천)
+    const EXPONENT = 0.5;  // 중간 가중치
+   */
 
     // 각 곡의 가중치 계산
     const weights = pool.map(song =>
