@@ -579,6 +579,47 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
 @keyframes diceSpin   { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(90deg) scale(1.2); } 50% { transform: rotate(180deg) scale(1); } 75% { transform: rotate(270deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
 
 /* ============================================
+   미션곡 M 뱃지
+   ============================================ */
+.mission-badge {
+    display: inline-block;
+    background: #e53935;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    font-style: italic;
+    width: 22px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(229, 57, 53, 0.4);
+}
+
+/* 랜덤 모달 내 M 뱃지 크기 키움 */
+.random-title .mission-badge {
+    font-size: 0.9rem;
+    width: 28px;
+    height: 26px;
+    line-height: 26px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+/* 가사 모달 내 M 뱃지 */
+.modal-header h2 .mission-badge {
+    font-size: 0.8rem;
+    width: 24px;
+    height: 22px;
+    line-height: 22px;
+    border-radius: 5px;
+}
+
+/* ============================================
    반응형
    ============================================ */
 @media (max-width: 768px) {
