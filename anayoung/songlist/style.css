@@ -481,13 +481,13 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     vertical-align: middle;
     letter-spacing: -0.5px;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(229, 57, 53, 0.4);
+    /*box-shadow: 0 1px 3px rgba(229, 57, 53, 0.4);*/
 }
 
 /* 랜덤 모달 내 M 뱃지 */
 .random-title .mission-badge {
-    font-size: 0.9rem;
-    width: 28px;
+    font-size: 1.2rem;
+    width: 26px;
     height: 26px;
     line-height: 26px;
     border-radius: 6px;
@@ -496,8 +496,8 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
 
 /* 가사 모달 내 M 뱃지 */
 .modal-header h2 .mission-badge {
-    font-size: 0.8rem;
-    width: 24px;
+    font-size: 0.9rem;
+    width: 22px;
     height: 22px;
     line-height: 22px;
     border-radius: 5px;
