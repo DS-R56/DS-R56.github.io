@@ -523,7 +523,7 @@ function extractGenres(songs) {
 
 // ★ NEW: 미션곡 M 뱃지 HTML 생성
 function missionHtml(song) {
-    return song.mission ? '<span class="mission-badge">M</span>' : '';
+    return song.mission ? '<span class="mission-badge"></span>' : '';
 }
 
 /* ============================================
