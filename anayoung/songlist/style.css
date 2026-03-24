@@ -485,7 +485,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 800;
     font-style: normal;
     letter-spacing: 0;
@@ -510,7 +510,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     border-radius: 5px;
 }
 .modal-header h2 .mission-badge::after {
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 /* ============================================
