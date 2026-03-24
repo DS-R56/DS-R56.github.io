@@ -485,7 +485,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 800;
     font-style: normal;
     letter-spacing: 0;
@@ -500,7 +500,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     margin-left: 8px;
 }
 .random-title .mission-badge::after {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
 /* 가사 모달 내 M 뱃지 */
@@ -510,7 +510,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     border-radius: 5px;
 }
 .modal-header h2 .mission-badge::after {
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 /* ============================================
