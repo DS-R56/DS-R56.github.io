@@ -466,9 +466,9 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
    미션곡 M 뱃지
    ============================================ */
 .mission-badge {
-    display: inline-flex;          /* ✅ inline-block → inline-flex 변경 */
-    justify-content: center;       /* ✅ 수평 중앙 */
-    align-items: center;           /* ✅ 수직 중앙 */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     background: #e53935;
     color: #fff;
     font-size: 0.9rem;
@@ -476,13 +476,15 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     font-style: normal;
     width: 20px;
     height: 20px;
-    /* line-height: 20px; */       /* ❌ 제거 (flex로 대체) */
+    line-height: 1;               /* ✅ 20px이 아니라 1로! */
     text-align: center;
     border-radius: 5px;
     margin-left: 6px;
     vertical-align: middle;
-    letter-spacing: -0.5px;
+    letter-spacing: 0;             /* ✅ -0.5px → 0 (오른쪽 치우침 해결) */
     flex-shrink: 0;
+    padding: 0;                    /* ✅ 혹시 상속된 padding 제거 */
+    text-indent: 0;                /* ✅ 혹시 상속된 indent 제거 */
 }
 
 /* 랜덤 모달 내 M 뱃지 */
@@ -490,7 +492,6 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     font-size: 1.2rem;
     width: 26px;
     height: 26px;
-    /* line-height: 26px; */       /* ❌ 제거 */
     border-radius: 6px;
     margin-left: 8px;
 }
@@ -500,7 +501,6 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     font-size: 0.9rem;
     width: 22px;
     height: 22px;
-    /* line-height: 22px; */       /* ❌ 제거 */
     border-radius: 5px;
 }
 
