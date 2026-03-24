@@ -469,10 +469,10 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     display: inline-block;
     background: #e53935;
     color: #fff;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: 800;
-    font-style: italic;
-    width: 22px;
+    font-style: normal;
+    width: 20px;
     height: 20px;
     line-height: 20px;
     text-align: center;
