@@ -416,14 +416,14 @@ tbody tr:last-child td { border-bottom: none; }
 
 td:first-child { text-align: center; color: var(--c-num); font-size: 0.85rem; }
 
-/* ★ 가수 - 잘 보이게 */
+/* 가수 */
 .song-artist {
     font-weight: 600;
     font-size: 0.95rem;
     color: var(--c-artist);
 }
 
-/* ★ 곡명 - 잘 보이게 */
+/* 곡명 */
 .song-title {
     font-weight: 700;
     font-size: 1rem;
@@ -443,7 +443,7 @@ td:first-child { text-align: center; color: var(--c-num); font-size: 0.85rem; }
 .lyrics-btn.no-lyrics                 { opacity: 0.12; cursor: default; pointer-events: none; }
 tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
 
-/* ★ 즐겨찾기 하트 - 빈 하트 기본 */
+/* 즐겨찾기 하트 */
 .fav-btn {
     background: none; border: none; cursor: pointer;
     font-size: 1.2rem; transition: all 0.2s;
@@ -461,6 +461,47 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
 .badge-genre  { background: var(--badge-g-bg); color: var(--badge-g-c); margin-right: 4px; margin-bottom: 2px; }
 .badge-male   { background: var(--badge-m-bg); color: var(--badge-m-c); }
 .badge-female { background: var(--badge-f-bg); color: var(--badge-f-c); }
+
+/* ============================================
+   미션곡 M 뱃지
+   ============================================ */
+.mission-badge {
+    display: inline-block;
+    background: #e53935;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    font-style: italic;
+    width: 22px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(229, 57, 53, 0.4);
+}
+
+/* 랜덤 모달 내 M 뱃지 */
+.random-title .mission-badge {
+    font-size: 0.9rem;
+    width: 28px;
+    height: 26px;
+    line-height: 26px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+/* 가사 모달 내 M 뱃지 */
+.modal-header h2 .mission-badge {
+    font-size: 0.8rem;
+    width: 24px;
+    height: 22px;
+    line-height: 22px;
+    border-radius: 5px;
+}
 
 /* ============================================
    로딩 / 에러
@@ -579,47 +620,6 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
 @keyframes diceSpin   { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(90deg) scale(1.2); } 50% { transform: rotate(180deg) scale(1); } 75% { transform: rotate(270deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
 
 /* ============================================
-   미션곡 M 뱃지
-   ============================================ */
-.mission-badge {
-    display: inline-block;
-    background: #e53935;
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 800;
-    font-style: italic;
-    width: 22px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-    border-radius: 5px;
-    margin-left: 6px;
-    vertical-align: middle;
-    letter-spacing: -0.5px;
-    flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(229, 57, 53, 0.4);
-}
-
-/* 랜덤 모달 내 M 뱃지 크기 키움 */
-.random-title .mission-badge {
-    font-size: 0.9rem;
-    width: 28px;
-    height: 26px;
-    line-height: 26px;
-    border-radius: 6px;
-    margin-left: 8px;
-}
-
-/* 가사 모달 내 M 뱃지 */
-.modal-header h2 .mission-badge {
-    font-size: 0.8rem;
-    width: 24px;
-    height: 22px;
-    line-height: 22px;
-    border-radius: 5px;
-}
-
-/* ============================================
    반응형
    ============================================ */
 @media (max-width: 768px) {
@@ -646,6 +646,8 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
 
     .song-title  { font-size: 0.9rem; }
     .song-artist { font-size: 0.85rem; }
+
+    .mission-badge { width: 20px; height: 18px; line-height: 18px; font-size: 0.65rem; margin-left: 4px; }
 }
 
 @media (max-width: 480px) {
@@ -662,6 +664,8 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
     .ra-btn     { padding: 8px 14px; font-size: 0.8rem; }
     .overlay-box { padding: 24px 18px; }
     .create-id-value { font-size: 1.3rem; }
+
+    .mission-badge { width: 18px; height: 16px; line-height: 16px; font-size: 0.6rem; margin-left: 3px; border-radius: 4px; }
 }
 
 @media print {
