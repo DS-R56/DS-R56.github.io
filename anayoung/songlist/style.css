@@ -482,7 +482,7 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     content: "M";
     color: #fff;
     position: absolute;
-    top: 30%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 1.1rem;
