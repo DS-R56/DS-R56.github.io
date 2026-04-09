@@ -593,7 +593,7 @@ async function fetchSongs() {
    ============================================ */
 function extractGenres(songs) {
     // ★ 앞에 고정할 장르만 순서대로 지정
-    const PRIORITY_GENRES = ['발라드', '락/인디', 'R&B', '랩/힙합', '팝', '댄스', '아이돌(K-POP)', '국악', '뮤지컬', '트로트', 'OST', 'J-POP'];
+    const PRIORITY_GENRES = ['발라드', '락/인디', 'R&B', '힙합/랩', '팝', '댄스', '아이돌(K-POP)', '국악', '뮤지컬', '트로트', 'OST', 'J-POP'];
 
     const s = new Set();
     songs.forEach(song => parseGenres(song.genre).forEach(g => s.add(g)));
