@@ -591,6 +591,26 @@ async function fetchSongs() {
 /* ============================================
    장르 필터 동적 생성
    ============================================ */
+function extractGenres(songs) {
+    // ★ 앞에 고정할 장르만 순서대로 지정
+    const PRIORITY_GENRES = ['락/인디', '발라드', '팝', '뮤지컬'];
+
+    const s = new Set();
+    songs.forEach(song => parseGenres(song.genre).forEach(g => s.add(g)));
+
+    const allGenres = [...s];
+    
+    // 우선순위 장르 (존재하는 것만)
+    const priority = PRIORITY_GENRES.filter(g => allGenres.includes(g));
+    
+    // 나머지 장르 (가나다순 자동 정렬)
+    const rest = allGenres
+        .filter(g => !PRIORITY_GENRES.includes(g))
+        .sort((a, b) => a.localeCompare(b, 'ko'));
+
+    return [...priority, ...rest];
+}
+
 function buildGenreFilters() {
     const wrap = $('#genreFilters');
     const frag = document.createDocumentFragment();
