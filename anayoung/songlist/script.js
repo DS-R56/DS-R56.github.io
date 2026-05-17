@@ -4,7 +4,7 @@
 const CONFIG = Object.freeze({
     SONG_SS_ID : '1sAsXEl14Vr4k1hlAhdHD5JpIjWu4eFQgwo2KP9nP8oU',
     SONG_SHEET : '데이터베이스',
-    SONG_RANGE : 'E:K',   // ★ CHANGED: E:J → E:K (J=미션곡, K=부른횟수)
+    SONG_RANGE : 'E:L',   // ★ CHANGED: E:K → E:L (K=키, L=부른횟수)
     API_URL    : 'https://script.google.com/macros/s/AKfycbwSK3iHaV3QbyEFpW347SsOaG6ZrkE3Yx9WLrAM-5pmETbkYDgFMN08HWJpYVstUpnu/exec',
     PER_PAGE   : 80,
     CACHE_KEY  : 'songlist_cache',
@@ -515,15 +515,20 @@ function hilite(text, query) {
 }
 
 function parseGenres(s)      { return s ? s.split(',').map(g => g.trim()).filter(Boolean) : []; }
-function extractGenres(songs) {
-    const s = new Set();
-    songs.forEach(song => parseGenres(song.genre).forEach(g => s.add(g)));
-    return [...s].sort((a, b) => a.localeCompare(b, 'ko'));
-}
 
-// ★ NEW: 미션곡 M 뱃지 HTML 생성
+// ★ 미션곡 M 뱃지 HTML
 function missionHtml(song) {
     return song.mission ? '<span class="mission-badge"></span>' : '';
+}
+
+// ★ NEW: 키 표시 HTML
+function keyHtml(song) {
+    const k = song.key;
+    if (k === null || k === undefined || k === '') return '<span class="key-none">-</span>';
+    const num = parseInt(k, 10);
+    if (isNaN(num) || num === 0) return '<span class="key-none">-</span>';
+    if (num > 0) return `<span class="key-up">+${num}</span>`;
+    return `<span class="key-down">${num}</span>`;
 }
 
 /* ============================================
@@ -562,7 +567,7 @@ async function fetchSongs() {
         const parsed  = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
         const headers = parsed.meta.fields || [];
 
-        // ★ CHANGED: E=장르[0], F=성별[1], G=가수[2], H=곡명[3], I=가사[4], J=미션곡[5], K=부른횟수[6]
+        // E=장르[0], F=성별[1], G=가수[2], H=곡명[3], I=가사[4], J=미션곡[5], K=키[6], L=부른횟수[7]
         allSongs = parsed.data
             .filter(row => (row['곡명'] || row[headers[3]] || '').trim())
             .map((row, i) => ({
@@ -572,8 +577,9 @@ async function fetchSongs() {
                 artist:    (row['가수']     || row[headers[2]] || '').trim(),
                 title:     (row['곡명']     || row[headers[3]] || '').trim(),
                 lyrics:    (row['가사']     || row[headers[4]] || '').trim(),
-                mission:   (row['미션곡']   || row[headers[5]] || '').trim().toUpperCase() === 'TRUE',  // ★ NEW: J열
-                sungCount: parseInt(row['부른횟수'] || row[headers[6]] || '0', 10) || 0,                // ★ CHANGED: K열
+                mission:   (row['미션곡']   || row[headers[5]] || '').trim().toUpperCase() === 'TRUE',
+                key:       (row['키']       || row[headers[6]] || '').trim(),   // ★ NEW: K열
+                sungCount: parseInt(row['부른횟수'] || row[headers[7]] || '0', 10) || 0, // ★ CHANGED: L열
             }));
 
         buildGenreFilters();
@@ -592,19 +598,14 @@ async function fetchSongs() {
    장르 필터 동적 생성
    ============================================ */
 function extractGenres(songs) {
-    // ★ 앞에 고정할 장르만 순서대로 지정
     const PRIORITY_GENRES = ['발라드', '락/인디', 'R&B', '힙합/랩', '팝', '댄스', '아이돌(K-POP)', '국악', '뮤지컬', '트로트', 'OST', 'J-POP'];
 
     const s = new Set();
     songs.forEach(song => parseGenres(song.genre).forEach(g => s.add(g)));
 
     const allGenres = [...s];
-    
-    // 우선순위 장르 (존재하는 것만)
-    const priority = PRIORITY_GENRES.filter(g => allGenres.includes(g));
-    
-    // 나머지 장르 (가나다순 자동 정렬)
-    const rest = allGenres
+    const priority  = PRIORITY_GENRES.filter(g => allGenres.includes(g));
+    const rest      = allGenres
         .filter(g => !PRIORITY_GENRES.includes(g))
         .sort((a, b) => a.localeCompare(b, 'ko'));
 
@@ -695,7 +696,6 @@ function filterAndRender() {
 
 /* ============================================
    렌더링 (페이지네이션)
-   ★ 곡명 옆에 미션곡 M 뱃지 표시
    ============================================ */
 function renderMore() {
     if (isRendering) return;
@@ -740,9 +740,10 @@ function renderMore() {
                     `</button>` +
                 `</td>` +
                 `<td class="song-artist">${hilite(song.artist, searchQuery)}</td>` +
-
-                // ★ CHANGED: 곡명 + 미션곡 M 뱃지
                 `<td class="song-title">${hilite(song.title, searchQuery)}${missionHtml(song)}</td>` +
+
+                // ★ NEW: 키 열 (곡명과 가사 사이)
+                `<td class="song-key">${keyHtml(song)}</td>` +
 
                 `<td>` +
                     `<button class="lyrics-btn ${hasLyr ? 'has-lyrics' : 'no-lyrics'}" ` +
@@ -786,17 +787,30 @@ function initScrollTop() {
 }
 
 /* ============================================
-   가사 모달 (★ CHANGED: M 뱃지 표시)
+   가사 모달
    ============================================ */
 function openLyricsModal(song) {
-    // ★ CHANGED: innerHTML로 M 뱃지 포함
-    $('#modalTitle').innerHTML   = esc(song.title) + missionHtml(song);
+    $('#modalTitle').innerHTML    = esc(song.title) + missionHtml(song);
     $('#modalArtist').textContent = song.artist;
     $('#modalGenre').textContent  = song.genre;
 
     const gt = $('#modalGender');
     gt.textContent = (song.gender === '여' ? '👩 ' : '👨 ') + song.gender;
     gt.className   = `mtag ${song.gender === '여' ? 'gender-tag' : 'gender-tag-m'}`;
+
+    // ★ NEW: 키 정보 모달에 표시
+    const keyEl = $('#modalKey');
+    if (keyEl) {
+        const k = parseInt(song.key, 10);
+        if (!isNaN(k) && k !== 0) {
+            keyEl.innerHTML = k > 0
+                ? `<span class="key-up">키 +${k}</span>`
+                : `<span class="key-down">키 ${k}</span>`;
+            keyEl.style.display = '';
+        } else {
+            keyEl.style.display = 'none';
+        }
+    }
 
     const lyrics = song.lyrics.replace(/^[""\u201C\u201D]|[""\u201C\u201D]$/g, '').trim();
     $('#modalLyrics').textContent = lyrics || '가사 정보가 없습니다.';
@@ -818,14 +832,10 @@ function weightedRandomPick(pool) {
     if (pool.length === 1) return pool[0];
 
     const EXPONENT = 0.3;
+    const weights  = pool.map(song => 1 / Math.pow((song.sungCount || 0) + 1, EXPONENT));
+    const total    = weights.reduce((sum, w) => sum + w, 0);
 
-    const weights = pool.map(song =>
-        1 / Math.pow((song.sungCount || 0) + 1, EXPONENT)
-    );
-
-    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-
-    let r = Math.random() * totalWeight;
+    let r = Math.random() * total;
     for (let i = 0; i < pool.length; i++) {
         r -= weights[i];
         if (r <= 0) return pool[i];
@@ -834,7 +844,7 @@ function weightedRandomPick(pool) {
 }
 
 /* ============================================
-   랜덤 추천 (★ CHANGED: M 뱃지 표시)
+   랜덤 추천
    ============================================ */
 function pickRandom() {
     const pool = filteredSongs.length ? filteredSongs : allSongs;
@@ -848,8 +858,7 @@ function pickRandom() {
     const song = weightedRandomPick(pool);
     currentRandomSong = song;
 
-    // ★ CHANGED: innerHTML로 M 뱃지 포함
-    $('#randomTitle').innerHTML   = esc(song.title) + missionHtml(song);
+    $('#randomTitle').innerHTML    = esc(song.title) + missionHtml(song);
     $('#randomArtist').textContent = song.artist;
     $('#randomGenre').textContent  = song.genre;
 
@@ -857,11 +866,25 @@ function pickRandom() {
     gt.textContent = (song.gender === '여' ? '👩 ' : '👨 ') + song.gender;
     gt.className   = `mtag ${song.gender === '여' ? 'gender-tag' : 'gender-tag-m'}`;
 
+    // ★ NEW: 랜덤 모달 키 표시
+    const randomKeyEl = $('#randomKey');
+    if (randomKeyEl) {
+        const k = parseInt(song.key, 10);
+        if (!isNaN(k) && k !== 0) {
+            randomKeyEl.innerHTML = k > 0
+                ? `<span class="key-up">키 +${k}</span>`
+                : `<span class="key-down">키 ${k}</span>`;
+            randomKeyEl.style.display = '';
+        } else {
+            randomKeyEl.style.display = 'none';
+        }
+    }
+
     $('#randomFavBtn').textContent = favorites.has(songKey(song)) ? '💛 해제' : '⭐ 즐겨찾기';
 
     const lb  = $('#randomLyricsBtn');
     const has = !!song.lyrics.trim();
-    lb.disabled     = !has;
+    lb.disabled      = !has;
     lb.style.opacity = has ? 1 : 0.4;
 
     DOM.randomModal.classList.add('active');
