@@ -43,6 +43,12 @@
     --hl-bg:      rgba(255,230,0,0.25);
     --fav-c:      #666;
     --fav-active: #ff4757;
+
+    --key-up-bg:   rgba(46,204,113,0.15);
+    --key-up-c:    #2ecc71;
+    --key-down-bg: rgba(231,76,60,0.15);
+    --key-down-c:  #e74c3c;
+    --key-none-c:  #555;
 }
 
 /* ============================================
@@ -88,6 +94,12 @@
     --hl-bg:      rgba(255,200,0,0.3);
     --fav-c:      #ccc;
     --fav-active: #e74c3c;
+
+    --key-up-bg:   rgba(39,174,96,0.12);
+    --key-up-c:    #27ae60;
+    --key-down-bg: rgba(192,57,43,0.12);
+    --key-down-c:  #c0392b;
+    --key-none-c:  #bbb;
 }
 
 /* ============================================
@@ -411,6 +423,7 @@ tbody tr:last-child td { border-bottom: none; }
 /* 열 너비 */
 .col-num    { width: 45px; text-align: center; }
 .col-fav    { width: 40px; text-align: center; }
+.col-key    { width: 50px; text-align: center; }
 .col-lyrics { width: 45px; text-align: center; }
 .col-gender { width: 60px; }
 
@@ -428,6 +441,30 @@ td:first-child { text-align: center; color: var(--c-num); font-size: 0.85rem; }
     font-weight: 700;
     font-size: 1rem;
     color: var(--c-primary);
+}
+
+/* ★ NEW: 키 셀 */
+.song-key { text-align: center; }
+
+.key-up {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 8px;
+    background: var(--key-up-bg);
+    color: var(--key-up-c);
+    font-size: 0.82rem; font-weight: 700;
+}
+
+.key-down {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 8px;
+    background: var(--key-down-bg);
+    color: var(--key-down-c);
+    font-size: 0.82rem; font-weight: 700;
+}
+
+.key-none {
+    color: var(--key-none-c);
+    font-size: 0.85rem;
 }
 
 /* 가사 버튼 */
@@ -477,7 +514,6 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     flex-shrink: 0;
 }
 
-/* M 글자를 정중앙에 배치 */
 .mission-badge::after {
     content: "M";
     color: #fff;
@@ -492,26 +528,32 @@ tbody tr:hover .lyrics-btn.has-lyrics { opacity: 0.8; }
     line-height: 1;
 }
 
-/* 랜덤 모달 내 M 뱃지 */
 .random-title .mission-badge {
     width: 26px;
     height: 26px;
     border-radius: 6px;
     margin-left: 8px;
 }
-.random-title .mission-badge::after {
-    font-size: 1.3rem;
-}
+.random-title .mission-badge::after { font-size: 1.3rem; }
 
-/* 가사 모달 내 M 뱃지 */
 .modal-header h2 .mission-badge {
     width: 22px;
     height: 22px;
     border-radius: 5px;
 }
-.modal-header h2 .mission-badge::after {
-    font-size: 1.1rem;
+.modal-header h2 .mission-badge::after { font-size: 1.1rem; }
+
+/* ============================================
+   키 태그 (모달 / 랜덤)
+   ============================================ */
+.key-tag {
+    background: var(--bg-filter);
+    border: 1px solid var(--b-light);
+    color: var(--c-muted);
+    font-size: 0.78rem;
 }
+.key-tag .key-up   { background: none; padding: 0; font-size: 0.78rem; }
+.key-tag .key-down { background: none; padding: 0; font-size: 0.78rem; }
 
 /* ============================================
    로딩 / 에러
@@ -642,8 +684,8 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
 
     /* 장르 숨김 */
     .col-genre { display: none; }
-    td:nth-child(6) { display: none; }
-    th:nth-child(6) { display: none; }
+    td:nth-child(7) { display: none; }
+    th:nth-child(7) { display: none; }
 
     .modal-content, .random-content, .save-confirm-box, .overlay-box { width: 95%; }
     .modal-content   { max-height: 90vh; max-height: 90dvh; border-radius: 16px; }
@@ -663,11 +705,16 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
 @media (max-width: 480px) {
     .container { padding: 12px 10px 40px; }
 
-    /* #, 성별 숨김 */
+    /* #, 성별, 키 숨김 */
     .col-num, td:first-child, th:first-child { display: none; }
     .col-gender { display: none; }
-    td:nth-child(7) { display: none; }
-    th:nth-child(7) { display: none; }
+    td:nth-child(8) { display: none; }
+    th:nth-child(8) { display: none; }
+
+    /* 키 열 숨김 */
+    .col-key { display: none; }
+    td:nth-child(5) { display: none; }
+    th:nth-child(5) { display: none; }
 
     .fav-btn    { font-size: 1rem; }
     .lyrics-btn { font-size: 0.95rem; }
