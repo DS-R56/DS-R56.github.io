@@ -28,7 +28,7 @@
     <button id="themeToggle" class="theme-toggle" aria-label="테마 변경">🌙</button>
     <button id="scrollTopBtn" class="scroll-top-btn" aria-label="맨 위로">↑</button>
 
-    <!-- ===== 메인 앱 (바로 표시) ===== -->
+    <!-- ===== 메인 앱 ===== -->
     <div class="container" id="appScreen">
 
         <header>
@@ -113,6 +113,8 @@
                         <th class="col-title sortable" data-sort="title">
                             곡명 <span class="sort-arrow">⇅</span>
                         </th>
+                        <!-- ★ NEW: 키 열 -->
+                        <th class="col-key">키</th>
                         <th class="col-lyrics">가사</th>
                         <th class="col-genre sortable" data-sort="genre">
                             장르 <span class="sort-arrow">⇅</span>
@@ -190,6 +192,8 @@
                 <div class="modal-tags">
                     <span id="modalGenre" class="mtag genre-tag"></span>
                     <span id="modalGender" class="mtag gender-tag"></span>
+                    <!-- ★ NEW: 키 표시 -->
+                    <span id="modalKey" class="mtag key-tag" style="display:none;"></span>
                 </div>
             </div>
             <div class="modal-body"><pre id="modalLyrics"></pre></div>
@@ -209,6 +213,8 @@
                 <div class="random-meta">
                     <span id="randomGenre" class="mtag genre-tag"></span>
                     <span id="randomGender" class="mtag gender-tag"></span>
+                    <!-- ★ NEW: 랜덤 모달 키 표시 -->
+                    <span id="randomKey" class="mtag key-tag" style="display:none;"></span>
                 </div>
             </div>
             <div class="random-actions">
