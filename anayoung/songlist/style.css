@@ -381,6 +381,42 @@ header h1 {
 .fav-count { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 10px; padding: 0 7px; font-size: 0.75rem; margin-left: 4px; min-width: 20px; text-align: center; }
 
 /* ============================================
+   미션곡 필터 버튼 내부 M 뱃지 (작은 버전)
+   ============================================ */
+.mission-badge-small {
+    display: inline-block;
+    position: relative;
+    background: #e53935;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+.mission-badge-small::after {
+    content: "M";
+    color: #fff;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.85rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* 미션곡 필터 활성화 시 배경 */
+.mission-filter-btn.active {
+    background: linear-gradient(135deg, #e53935, #ff6f00);
+    box-shadow: 0 2px 12px rgba(229, 57, 53, 0.35);
+}
+
+.mission-filter-btn.active .mission-badge-small {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
    테이블
    ============================================ */
 table {
@@ -443,7 +479,7 @@ td:first-child { text-align: center; color: var(--c-num); font-size: 0.85rem; }
     color: var(--c-primary);
 }
 
-/* ★ NEW: 키 셀 */
+/* 키 셀 */
 .song-key { text-align: center; }
 
 .key-up {
