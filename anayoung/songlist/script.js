@@ -121,13 +121,11 @@ function updateUserBar() {
         DOM.userBadge.style.display    = '';
         DOM.saveFavBtn.style.display   = '';
         DOM.logoutBtn.style.display    = '';
-        $('#footerSaveInfo').textContent = `${currentUser} 클라우드 저장`;
     } else {
         DOM.loginOpenBtn.style.display = '';
         DOM.userBadge.style.display    = 'none';
         DOM.saveFavBtn.style.display   = 'none';
         DOM.logoutBtn.style.display    = 'none';
-        $('#footerSaveInfo').textContent = '로그인하여 즐겨찾기 저장';
     }
     updateFavCount();
     updateSaveBtn();
