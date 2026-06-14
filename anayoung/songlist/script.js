@@ -15,10 +15,9 @@ const CONFIG = Object.freeze({
 
 /* 좌측 상단 패널 문구/목록은 여기만 수정하면 됩니다. */
 const INFO_PANEL_DATA = Object.freeze({
-    listTitle : '',
     items     : [
         {
-            icon               : '🎲',
+            icon               : '🎈',
             label              : '노래 룰렛',
             count              : '50개',
             probabilityTitle   : '노래 룰렛 확률',
@@ -116,6 +115,7 @@ function cacheDom() {
         infoPanel       : $('#infoPanel'),
         infoBubbleWrap  : $('.info-bubble-wrap'),
         infoBubble      : $('#infoBubble'),
+        infoScrollHead  : $('.info-scroll-head'),
         infoListTitle   : $('#infoListTitle'),
         infoList        : $('#infoList'),
     };
@@ -588,8 +588,9 @@ function renderProbabilityHtml(item) {
 }
 
 function renderInfoPanel() {
-    const hasItems  = Array.isArray(INFO_PANEL_DATA.items) && INFO_PANEL_DATA.items.length > 0;
-    const hasBubble = !!(INFO_PANEL_DATA.bubbleText || '').trim();
+    const hasItems     = Array.isArray(INFO_PANEL_DATA.items) && INFO_PANEL_DATA.items.length > 0;
+    const hasBubble    = !!(INFO_PANEL_DATA.bubbleText || '').trim();
+    const hasListTitle = !!(INFO_PANEL_DATA.listTitle || '').trim();
 
     if (!hasItems && !hasBubble) {
         DOM.infoPanel.style.display = 'none';
@@ -599,7 +600,8 @@ function renderInfoPanel() {
     DOM.infoPanel.style.display         = '';
     DOM.infoBubbleWrap.style.display    = hasBubble ? '' : 'none';
     DOM.infoBubble.innerHTML            = hasBubble ? multilineHtml(INFO_PANEL_DATA.bubbleText) : '';
-    DOM.infoListTitle.textContent       = INFO_PANEL_DATA.listTitle || '';
+    DOM.infoScrollHead.style.display    = hasListTitle ? '' : 'none';
+    DOM.infoListTitle.textContent       = hasListTitle ? INFO_PANEL_DATA.listTitle : '';
     DOM.infoList.innerHTML              = '';
 
     const frag = document.createDocumentFragment();
