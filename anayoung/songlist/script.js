@@ -17,7 +17,7 @@ const CONFIG = Object.freeze({
 const INFO_PANEL_DATA = Object.freeze({
     items     : [
         {
-            icon               : '🎈',
+            icon               : '🎲',
             label              : '노래 룰렛',
             count              : '50개',
             probabilityTitle   : '노래 룰렛 확률',
