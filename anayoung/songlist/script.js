@@ -599,7 +599,7 @@ function renderInfoPanel() {
     DOM.infoPanel.style.display         = '';
     DOM.infoBubbleWrap.style.display    = hasBubble ? '' : 'none';
     DOM.infoBubble.innerHTML            = hasBubble ? multilineHtml(INFO_PANEL_DATA.bubbleText) : '';
-    DOM.infoListTitle.textContent       = INFO_PANEL_DATA.listTitle || '진행 리스트';
+    DOM.infoListTitle.textContent       = INFO_PANEL_DATA.listTitle || '';
     DOM.infoList.innerHTML              = '';
 
     const frag = document.createDocumentFragment();
