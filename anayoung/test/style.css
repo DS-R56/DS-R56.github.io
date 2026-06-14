@@ -312,6 +312,30 @@ body {
     background: rgba(255,255,255,0.78);
 }
 
+.probability-icon-wrap {
+    align-items: flex-start;
+}
+
+.probability-icon-trigger {
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.probability-icon-trigger:hover,
+.probability-icon-trigger:focus-visible {
+    background: transparent;
+    box-shadow: none;
+    transform: translateY(-1px) scale(1.08);
+}
+
 .probability-popover {
     position: absolute;
     top: calc(100% + 12px);
@@ -329,6 +353,11 @@ body {
     z-index: 15;
 }
 
+.probability-icon-wrap .probability-popover {
+    left: -2px;
+    right: auto;
+}
+
 .probability-popover::before {
     content: '';
     position: absolute;
@@ -340,6 +369,11 @@ body {
     border-top: 1px solid rgba(122, 76, 47, 0.22);
     border-left: 1px solid rgba(122, 76, 47, 0.22);
     transform: rotate(45deg);
+}
+
+.probability-icon-wrap .probability-popover::before {
+    left: 10px;
+    right: auto;
 }
 
 .info-item.has-probability:hover .probability-popover,
