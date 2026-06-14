@@ -120,20 +120,28 @@ body {
     overflow-x: hidden;
 }
 
-.container { max-width: 1380px; margin: 0 auto; padding: 20px 16px 40px; }
-
-.app-layout {
-    display: grid;
-    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    position: relative;
 }
 
-.app-main { min-width: 0; }
+.app-layout {
+    position: relative;
+}
+
+.app-main {
+    min-width: 0;
+    width: 100%;
+}
 
 .info-panel {
-    position: sticky;
-    top: 16px;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 300px;
+    transform: translateX(calc(-100% - 28px));
     z-index: 20;
 }
 
@@ -982,15 +990,18 @@ footer { text-align: center; padding: 20px; color: var(--c-dim); font-size: 0.8r
     background: #fff0c7;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1380px) {
     .app-layout {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 20px;
     }
 
     .info-panel {
         position: relative;
         top: auto;
+        left: auto;
+        transform: none;
         max-width: 760px;
         width: 100%;
         margin: 0 auto;
