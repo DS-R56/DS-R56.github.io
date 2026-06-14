@@ -16,9 +16,10 @@ const CONFIG = Object.freeze({
 /* 좌측 상단 패널 문구/목록은 여기만 수정하면 됩니다. */
 const INFO_PANEL_DATA = Object.freeze({
     bubbleText : [
-        '좌측 상단 긴 문단 영역입니다.',
-        '이 문장은 코드에서 자유롭게 교체할 수 있으며 줄바꿈도 그대로 반영됩니다.',
-        '필요하면 행사 안내, 진행 규칙, 공지사항, 방송용 멘트 등을 길게 입력해 사용하세요.',
+        '노래 룰렛 50개',
+        '노래 1곡 100개',
+        '미션곡(국내) 1004개',
+        '미션곡(해외) 1500개',
     ].join('\n'),
     listTitle : '진행 리스트',
     items     : [
@@ -26,21 +27,22 @@ const INFO_PANEL_DATA = Object.freeze({
             icon               : '🎈',
             label              : '노래 룰렛',
             count              : '50개',
-            description        : '마우스를 올리거나 풍선 버튼을 눌러 확률을 확인할 수 있습니다.',
             probabilityTitle   : '노래 룰렛 확률',
-            probabilityNote    : '확률 값 역시 코드에서 직접 수정 가능합니다.',
-            probabilityTrigger : '🎈',
             probabilities      : [
-                { name: '보상 A', value: '35%' },
-                { name: '보상 B', value: '25%' },
-                { name: '보상 C', value: '20%' },
-                { name: '보상 D', value: '20%' },
+                { name: '노래 1절',        value: '69.975%' },
+                { name: '노래 완곡',       value: '15%' },
+                { name: '꽝꽝',            value: '10%' },
+                { name: '역팬 10%',        value: '2%' },
+                { name: '방셀',            value: '2%' },
+                { name: '얼낙 1시간',      value: '1%' },
+                { name: '24시간 노방종',   value: '0.01%' },
+                { name: '미션곡',          value: '0.01%' },
+                { name: '소원권 (방송)',   value: '0.005%' },
             ],
         },
         { icon: '🎵', label: '노래 1곡',       count: '100개' },
         { icon: '🇰🇷', label: '미션곡(국내)', count: '1004개' },
         { icon: '🌍', label: '미션곡(해외)', count: '1500개' },
-        { icon: '〰️', label: '~',             count: '자유 입력' },
     ],
 });
 
@@ -581,7 +583,7 @@ function renderProbabilityHtml(item) {
         : '';
 
     return `<div class="probability-wrap probability-icon-wrap">` +
-        `<button type="button" class="probability-trigger probability-icon-trigger" aria-expanded="false" aria-label="${esc(item.label)} 확률 확인">${esc(item.probabilityTrigger || item.icon || '🎈')}</button>` +
+        `<button type="button" class="probability-trigger probability-icon-trigger" aria-expanded="false" aria-label="${esc(item.label)} 확률 확인">${esc(item.icon || '🎈')}</button>` +
         `<div class="probability-popover" role="note">` +
             `<div class="probability-title">${esc(item.probabilityTitle || `${item.label} 확률`)}</div>` +
             `${note}` +
