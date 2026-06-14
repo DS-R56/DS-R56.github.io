@@ -24,7 +24,7 @@ const INFO_PANEL_DATA = Object.freeze({
     listTitle : '진행 리스트',
     items     : [
         {
-            icon               : '🎈',
+            icon               : '🎲',
             label              : '노래 룰렛',
             count              : '50개',
             probabilityTitle   : '노래 룰렛 확률',
