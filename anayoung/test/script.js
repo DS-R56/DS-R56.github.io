@@ -15,13 +15,7 @@ const CONFIG = Object.freeze({
 
 /* 좌측 상단 패널 문구/목록은 여기만 수정하면 됩니다. */
 const INFO_PANEL_DATA = Object.freeze({
-    bubbleText : [
-        '노래 룰렛 50개',
-        '노래 1곡 100개',
-        '미션곡(국내) 1004개',
-        '미션곡(해외) 1500개',
-    ].join('\n'),
-    listTitle : '진행 리스트',
+    listTitle : '',
     items     : [
         {
             icon               : '🎲',
@@ -120,6 +114,7 @@ function cacheDom() {
         toast           : $('#toast'),
         scrollTopBtn    : $('#scrollTopBtn'),
         infoPanel       : $('#infoPanel'),
+        infoBubbleWrap  : $('.info-bubble-wrap'),
         infoBubble      : $('#infoBubble'),
         infoListTitle   : $('#infoListTitle'),
         infoList        : $('#infoList'),
@@ -601,10 +596,11 @@ function renderInfoPanel() {
         return;
     }
 
-    DOM.infoPanel.style.display    = '';
-    DOM.infoBubble.innerHTML       = multilineHtml(INFO_PANEL_DATA.bubbleText || '');
-    DOM.infoListTitle.textContent  = INFO_PANEL_DATA.listTitle || '진행 리스트';
-    DOM.infoList.innerHTML         = '';
+    DOM.infoPanel.style.display         = '';
+    DOM.infoBubbleWrap.style.display    = hasBubble ? '' : 'none';
+    DOM.infoBubble.innerHTML            = hasBubble ? multilineHtml(INFO_PANEL_DATA.bubbleText) : '';
+    DOM.infoListTitle.textContent       = INFO_PANEL_DATA.listTitle || '진행 리스트';
+    DOM.infoList.innerHTML              = '';
 
     const frag = document.createDocumentFragment();
 
