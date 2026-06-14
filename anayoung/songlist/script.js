@@ -13,6 +13,33 @@ const CONFIG = Object.freeze({
     USER_KEY   : 'songlist_user',
 });
 
+/* 좌측 상단 패널 문구/목록은 여기만 수정하면 됩니다. */
+const INFO_PANEL_DATA = Object.freeze({
+    listTitle : '',
+    items     : [
+        {
+            icon               : '🎲',
+            label              : '노래 룰렛',
+            count              : '50개',
+            probabilityTitle   : '노래 룰렛 확률',
+            probabilities      : [
+                { name: '노래 1절',        value: '69.975%' },
+                { name: '노래 완곡',       value: '15%' },
+                { name: '꽝꽝',            value: '10%' },
+                { name: '역팬 10%',        value: '2%' },
+                { name: '방셀',            value: '2%' },
+                { name: '얼낙 1시간',      value: '1%' },
+                { name: '24시간 노방종',   value: '0.01%' },
+                { name: '미션곡',          value: '0.01%' },
+                { name: '소원권 (방송)',   value: '0.005%' },
+            ],
+        },
+        { icon: '🎵', label: '노래 1곡',       count: '100개' },
+        { icon: '🇰🇷', label: '미션곡(국내)', count: '1004개' },
+        { icon: '🌍', label: '미션곡(해외)', count: '1500개' },
+    ],
+});
+
 const SONG_CSV_URL =
     `https://docs.google.com/spreadsheets/d/${CONFIG.SONG_SS_ID}` +
     `/gviz/tq?tqx=out:csv` +
@@ -86,6 +113,11 @@ function cacheDom() {
         saveModal       : $('#saveConfirmModal'),
         toast           : $('#toast'),
         scrollTopBtn    : $('#scrollTopBtn'),
+        infoPanel       : $('#infoPanel'),
+        infoBubbleWrap  : $('.info-bubble-wrap'),
+        infoBubble      : $('#infoBubble'),
+        infoListTitle   : $('#infoListTitle'),
+        infoList        : $('#infoList'),
     };
 }
 
@@ -527,6 +559,102 @@ function keyHtml(song) {
     return `<span class="key-down">${num}</span>`;
 }
 
+function multilineHtml(text) {
+    return esc(text || '').replace(/\n/g, '<br>');
+}
+
+function renderProbabilityHtml(item) {
+    if (!Array.isArray(item.probabilities) || !item.probabilities.length) return '';
+
+    const rows = item.probabilities.map(row =>
+        `<li class="probability-row">` +
+            `<span class="probability-name">${esc(row.name || '')}</span>` +
+            `<strong class="probability-value">${esc(row.value || '')}</strong>` +
+        `</li>`
+    ).join('');
+
+    const note = item.probabilityNote
+        ? `<p class="probability-note">${multilineHtml(item.probabilityNote)}</p>`
+        : '';
+
+    return `<div class="probability-wrap probability-icon-wrap">` +
+        `<button type="button" class="probability-trigger probability-icon-trigger" aria-expanded="false" aria-label="${esc(item.label)} 확률 확인">${esc(item.icon || '🎈')}</button>` +
+        `<div class="probability-popover" role="note">` +
+            `<div class="probability-title">${esc(item.probabilityTitle || `${item.label} 확률`)}</div>` +
+            `${note}` +
+            `<ul class="probability-list">${rows}</ul>` +
+        `</div>` +
+    `</div>`;
+}
+
+function renderInfoPanel() {
+    const hasItems  = Array.isArray(INFO_PANEL_DATA.items) && INFO_PANEL_DATA.items.length > 0;
+    const hasBubble = !!(INFO_PANEL_DATA.bubbleText || '').trim();
+
+    if (!hasItems && !hasBubble) {
+        DOM.infoPanel.style.display = 'none';
+        return;
+    }
+
+    DOM.infoPanel.style.display         = '';
+    DOM.infoBubbleWrap.style.display    = hasBubble ? '' : 'none';
+    DOM.infoBubble.innerHTML            = hasBubble ? multilineHtml(INFO_PANEL_DATA.bubbleText) : '';
+    DOM.infoListTitle.textContent       = INFO_PANEL_DATA.listTitle || '진행 리스트';
+    DOM.infoList.innerHTML              = '';
+
+    const frag = document.createDocumentFragment();
+
+    (INFO_PANEL_DATA.items || []).forEach(item => {
+        const li = document.createElement('li');
+        const hasProbability = Array.isArray(item.probabilities) && item.probabilities.length > 0;
+        const iconHtml = hasProbability
+            ? renderProbabilityHtml(item)
+            : `<span class="info-item-icon">${esc(item.icon || '•')}</span>`;
+        li.className = `info-item${hasProbability ? ' has-probability' : ''}`;
+
+        li.innerHTML =
+            `<div class="info-item-line">` +
+                `<div class="info-item-label-box">` +
+                    `${iconHtml}` +
+                    `<span class="info-item-label">${esc(item.label || '')}</span>` +
+                `</div>` +
+                `<div class="info-item-meta">` +
+                    `<span class="info-item-count">${esc(item.count || '')}</span>` +
+                `</div>` +
+            `</div>` +
+            (item.description ? `<div class="info-item-desc">${multilineHtml(item.description)}</div>` : '');
+
+        frag.appendChild(li);
+    });
+
+    DOM.infoList.appendChild(frag);
+}
+
+function closeProbabilityPopovers(exceptItem = null) {
+    $$('.info-item.has-probability.open').forEach(item => {
+        if (item === exceptItem) return;
+        item.classList.remove('open');
+        item.querySelector('.probability-trigger')?.setAttribute('aria-expanded', 'false');
+    });
+}
+
+function initInfoPanelEvents() {
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.probability-trigger');
+        if (trigger) {
+            const item     = trigger.closest('.info-item.has-probability');
+            const willOpen = !item.classList.contains('open');
+            closeProbabilityPopovers(item);
+            item.classList.toggle('open', willOpen);
+            trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            e.preventDefault();
+            return;
+        }
+
+        if (!e.target.closest('.info-item.has-probability')) closeProbabilityPopovers();
+    });
+}
+
 /* ============================================
    토스트
    ============================================ */
@@ -901,6 +1029,8 @@ function debounce(fn, ms) {
    ============================================ */
 document.addEventListener('DOMContentLoaded', () => {
     cacheDom();
+    renderInfoPanel();
+    initInfoPanelEvents();
     loadTheme();
     updateSortUI();
     initScrollObserver();
@@ -991,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#retryBtn').addEventListener('click', () => { sessionStorage.removeItem(CONFIG.CACHE_KEY); fetchSongs(); });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeLyricsModal(); closeRandomModal(); closeSaveModal(); hideLoginOverlay(); hideCreateOverlay(); }
+        if (e.key === 'Escape') { closeLyricsModal(); closeRandomModal(); closeSaveModal(); hideLoginOverlay(); hideCreateOverlay(); closeProbabilityPopovers(); }
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); DOM.searchInput.focus(); DOM.searchInput.select(); }
     });
 
