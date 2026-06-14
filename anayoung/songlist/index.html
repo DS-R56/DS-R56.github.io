@@ -30,111 +30,130 @@
 
     <!-- ===== 메인 앱 ===== -->
     <div class="container" id="appScreen">
-
-        <header>
-            <h1>🎤 안아영의 노래 리스트</h1>
-
-            <!-- 유저바 -->
-            <div class="user-bar" id="userBar">
-                <button id="loginOpenBtn" class="login-open-btn">🔑 로그인</button>
-                <span id="userBadge" class="user-badge" style="display:none;"></span>
-                <button id="saveFavBtn" class="save-fav-btn" style="display:none;">💾 저장됨</button>
-                <button id="logoutBtn" class="logout-btn" style="display:none;">🚪 로그아웃</button>
-            </div>
-
-            <p class="subtitle">
-                <span id="filteredCount">0</span> / <span id="totalCount">0</span>곡
-            </p>
-
-            <button id="randomBtn" class="random-btn">🎲 랜덤 추천</button>
-
-            <div class="search-wrapper">
-                <input type="text" id="searchInput" inputmode="search"
-                       placeholder="🔍 제목, 가수 검색 (초성 가능: ㅎㅂㄹㄱ)"
-                       autocomplete="off" spellcheck="false">
-                <div class="search-options">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="lyricsSearchToggle">
-                        <span>가사 포함 검색</span>
-                    </label>
+        <div class="app-layout">
+            <aside id="infoPanel" class="info-panel" aria-label="추가 정보 패널">
+                <div class="info-panel-inner">
+                    <div class="info-bubble-wrap">
+                        <div class="info-bubble-label"></div>
+                        <div id="infoBubble" class="info-bubble"></div>
+                    </div>
+                    <div class="info-scroll-card">
+                        <div class="info-scroll-head">
+                            <span class="info-scroll-icon">📜</span>
+                            <strong id="infoListTitle">진행 리스트</strong>
+                        </div>
+                        <ul id="infoList" class="info-list"></ul>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </aside>
 
-        <!-- 필터 -->
-        <div class="filters">
-            <div class="filter-group">
-                <span class="filter-label">보기</span>
-                <div class="filter-buttons" id="viewFilters">
-                    <button class="filter-btn active" data-value="all">전체</button>
-                    <button class="filter-btn mission-filter-btn" data-value="mission">
-                        <span class="mission-badge-small"></span> 미션곡
-                    </button>
-                    <button class="filter-btn fav-filter-btn" data-value="favorites">
-                        ⭐ 즐겨찾기 <span id="favCount" class="fav-count">0</span>
-                    </button>
+            <div class="app-main">
+                <header>
+                    <h1>🎤 안아영의 노래 리스트</h1>
+
+                    <!-- 유저바 -->
+                    <div class="user-bar" id="userBar">
+                        <button id="loginOpenBtn" class="login-open-btn">🔑 로그인</button>
+                        <span id="userBadge" class="user-badge" style="display:none;"></span>
+                        <button id="saveFavBtn" class="save-fav-btn" style="display:none;">💾 저장됨</button>
+                        <button id="logoutBtn" class="logout-btn" style="display:none;">🚪 로그아웃</button>
+                    </div>
+
+                    <p class="subtitle">
+                        <span id="filteredCount">0</span> / <span id="totalCount">0</span>곡
+                    </p>
+
+                    <button id="randomBtn" class="random-btn">🎲 랜덤 추천</button>
+
+                    <div class="search-wrapper">
+                        <input type="text" id="searchInput" inputmode="search"
+                               placeholder="🔍 제목, 가수 검색 (초성 가능: ㅎㅂㄹㄱ)"
+                               autocomplete="off" spellcheck="false">
+                        <div class="search-options">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="lyricsSearchToggle">
+                                <span>가사 포함 검색</span>
+                            </label>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- 필터 -->
+                <div class="filters">
+                    <div class="filter-group">
+                        <span class="filter-label">보기</span>
+                        <div class="filter-buttons" id="viewFilters">
+                            <button class="filter-btn active" data-value="all">전체</button>
+                            <button class="filter-btn mission-filter-btn" data-value="mission">
+                                <span class="mission-badge-small"></span> 미션곡
+                            </button>
+                            <button class="filter-btn fav-filter-btn" data-value="favorites">
+                                ⭐ 즐겨찾기 <span id="favCount" class="fav-count">0</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">성별</span>
+                        <div class="filter-buttons" id="genderFilters">
+                            <button class="filter-btn active" data-value="전체">전체</button>
+                            <button class="filter-btn" data-value="여">👩 여</button>
+                            <button class="filter-btn" data-value="남">👨 남</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">장르</span>
+                        <div class="filter-buttons" id="genreFilters">
+                            <button class="filter-btn active" data-value="전체">전체</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">성별</span>
-                <div class="filter-buttons" id="genderFilters">
-                    <button class="filter-btn active" data-value="전체">전체</button>
-                    <button class="filter-btn" data-value="여">👩 여</button>
-                    <button class="filter-btn" data-value="남">👨 남</button>
+
+                <!-- 로딩 / 에러 -->
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>노래 목록을 불러오는 중...</p>
                 </div>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">장르</span>
-                <div class="filter-buttons" id="genreFilters">
-                    <button class="filter-btn active" data-value="전체">전체</button>
+
+                <div id="errorMsg" class="error-msg" style="display:none;">
+                    <p>❌ 데이터를 불러올 수 없습니다</p>
+                    <p class="error-sub">새로고침하거나 네트워크를 확인해주세요</p>
+                    <button id="retryBtn" class="retry-btn">🔄 다시 시도</button>
                 </div>
-            </div>
-        </div>
 
-        <!-- 로딩 / 에러 -->
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>노래 목록을 불러오는 중...</p>
-        </div>
+                <!-- 노래 테이블 -->
+                <div id="songListWrapper" style="display:none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-num">#</th>
+                                <th class="col-fav">♡</th>
+                                <th class="col-artist sortable" data-sort="artist">
+                                    가수 <span class="sort-arrow">⇅</span>
+                                </th>
+                                <th class="col-title sortable" data-sort="title">
+                                    곡명 <span class="sort-arrow">⇅</span>
+                                </th>
+                                <th class="col-key">키</th>
+                                <th class="col-lyrics">가사</th>
+                                <th class="col-genre sortable" data-sort="genre">
+                                    장르 <span class="sort-arrow">⇅</span>
+                                </th>
+                                <th class="col-gender sortable" data-sort="gender">
+                                    성별 <span class="sort-arrow">⇅</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="songTableBody"></tbody>
+                    </table>
 
-        <div id="errorMsg" class="error-msg" style="display:none;">
-            <p>❌ 데이터를 불러올 수 없습니다</p>
-            <p class="error-sub">새로고침하거나 네트워크를 확인해주세요</p>
-            <button id="retryBtn" class="retry-btn">🔄 다시 시도</button>
-        </div>
-
-        <!-- 노래 테이블 -->
-        <div id="songListWrapper" style="display:none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-num">#</th>
-                        <th class="col-fav">♡</th>
-                        <th class="col-artist sortable" data-sort="artist">
-                            가수 <span class="sort-arrow">⇅</span>
-                        </th>
-                        <th class="col-title sortable" data-sort="title">
-                            곡명 <span class="sort-arrow">⇅</span>
-                        </th>
-                        <th class="col-key">키</th>
-                        <th class="col-lyrics">가사</th>
-                        <th class="col-genre sortable" data-sort="genre">
-                            장르 <span class="sort-arrow">⇅</span>
-                        </th>
-                        <th class="col-gender sortable" data-sort="gender">
-                            성별 <span class="sort-arrow">⇅</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="songTableBody"></tbody>
-            </table>
-
-            <p id="noResult" class="no-result" style="display:none;">
-                검색 결과가 없습니다 😢
-            </p>
-            <div id="scrollSentinel" class="scroll-sentinel"></div>
-            <div id="loadingMore" class="loading-more" style="display:none;">
-                <div class="spinner-small"></div>
+                    <p id="noResult" class="no-result" style="display:none;">
+                        검색 결과가 없습니다 😢
+                    </p>
+                    <div id="scrollSentinel" class="scroll-sentinel"></div>
+                    <div id="loadingMore" class="loading-more" style="display:none;">
+                        <div class="spinner-small"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
