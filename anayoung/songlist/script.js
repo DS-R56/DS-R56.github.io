@@ -24,9 +24,10 @@ const INFO_PANEL_DATA = Object.freeze({
             probabilities      : [
                 { name: '노래 1절',        value: '69.975%' },
                 { name: '노래 완곡',       value: '15%' },
-                { name: '꽝꽝',            value: '10%' },
+                { name: '꽝꽝',            value: '8%' },
                 { name: '역팬 10%',        value: '2%' },
                 { name: '방셀',            value: '2%' },
+                { name: '애교대사',        value: '2%' },
                 { name: '얼낙 1시간',      value: '1%' },
                 { name: '24시간 노방종',   value: '0.01%' },
                 { name: '미션곡',          value: '0.01%' },
