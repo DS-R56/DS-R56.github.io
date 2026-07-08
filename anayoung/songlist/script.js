@@ -22,9 +22,9 @@ const INFO_PANEL_DATA = Object.freeze({
             count              : '50개',
             probabilityTitle   : '노래 룰렛 확률',
             probabilities      : [
-                { name: '노래 1절',        value: '69.975%' },
+                { name: '노래 1절',        value: '75.975%' },
                 { name: '노래 완곡',       value: '15%' },
-                { name: '꽝꽝',            value: '8%' },
+                { name: '뽑기',            value: '2%' },
                 { name: '역팬 10%',        value: '2%' },
                 { name: '방셀',            value: '2%' },
                 { name: '애교대사',        value: '2%' },
