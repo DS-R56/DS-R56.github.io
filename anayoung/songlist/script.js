@@ -724,7 +724,7 @@ async function fetchSongs() {
    장르 필터 동적 생성
    ============================================ */
 function extractGenres(songs) {
-    const PRIORITY_GENRES = ['발라드', '락/인디', 'R&B', '힙합/랩', '팝', '댄스', 'K-POP', '재즈', '국악', '뮤지컬', '트로트', 'OST', 'J-POP'];
+    const PRIORITY_GENRES = ['발라드', '락/인디', 'R&B', '힙합/랩', '팝', '댄스', 'K-POP', '재즈', '국악', '뮤지컬', '트로트', 'OST', 'J-POP', 'C-POP'];
 
     const s = new Set();
     songs.forEach(song => parseGenres(song.genre).forEach(g => s.add(g)));
